@@ -52,21 +52,31 @@ Use the Gradle wrapper:
 ```bash
 ./gradlew check
 ./gradlew crap4javaCheck
+./gradlew qualityGate
 ./gradlew renderAgents
 ```
 
-`./gradlew crap4javaCheck` runs the pinned upstream `crap4java` tool against
-the repository's production Java sources. The first run downloads the pinned
-upstream commit into `build/crap4java/`, patches it for this Gradle build, and
-compiles the helper jar locally before executing the gate.
+`./gradlew crap4javaCheck` runs the shared `media.barney.crap4java` `0.1.1`
+gate against the repository's production Java sources. `./gradlew qualityGate`
+is the repo-local convenience entrypoint that runs `check` plus
+`crap4javaCheck`.
+
+Gradle resolves the shared `crap4java` plugin from GitHub Packages. Configure
+either:
+
+- `gpr.user` and `gpr.key` in `~/.gradle/gradle.properties`
+- `GITHUB_ACTOR` with `GITHUB_TOKEN`
+- `GITHUB_ACTOR` with `GH_TOKEN`
+
+For local development, the build also checks `mavenLocal()` first so a freshly
+published local copy of `media.barney.crap4java` is picked up before GitHub
+Packages.
 
 Renderer output artifacts from `./gradlew renderAgents` are written under `build/rendered/`:
 
 - Codex: `build/rendered/codex/.codex/agents/*.toml`
 - Claude: `build/rendered/claude/.claude/agents/*.md`
 - Copilot: `build/rendered/copilot/.github/agents/*.agent.md`
-
-The `crap4javaCheck` helper cache lives under `build/crap4java/`.
 
 Generated target artifacts are build outputs only and are not committed to git.
 

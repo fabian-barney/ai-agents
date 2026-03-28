@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'jacoco'
+    id 'media.barney.crap4java' version '0.1.1'
     id 'org.springframework.boot' version '3.5.13'
 }
 
@@ -71,14 +72,10 @@ tasks.named('jacocoTestReport') {
     }
 }
 
-tasks.register('crap4javaCheck', JavaExec) {
+tasks.register('qualityGate') {
     group = 'verification'
-    description = 'Run the crap4java quality gate against production Java sources.'
-    classpath = sourceSets.main.runtimeClasspath
-    mainClass = 'dev.fabianbarney.aiagents.quality.Crap4JavaGateApplication'
-    workingDir = layout.projectDirectory.asFile
-    systemProperty 'jacoco.version', jacocoVersion
-    dependsOn(tasks.named('classes'), tasks.named('jacocoTestReport'))
+    description = 'Run the repository quality gate tasks.'
+    dependsOn(tasks.named('check'), tasks.named('crap4javaCheck'))
 }
 
 tasks.named('check') {
