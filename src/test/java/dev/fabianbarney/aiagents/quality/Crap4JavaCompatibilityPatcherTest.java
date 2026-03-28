@@ -43,6 +43,14 @@ class Crap4JavaCompatibilityPatcherTest {
     }
 
     @Test
+    void detectsOnlyActualWindowsOsNames() {
+        assertTrue(Crap4JavaCompatibilityPatcher.isWindowsName("Windows 11"));
+        assertTrue(Crap4JavaCompatibilityPatcher.isWindowsName("windows server 2025"));
+        assertFalse(Crap4JavaCompatibilityPatcher.isWindowsName("Darwin"));
+        assertFalse(Crap4JavaCompatibilityPatcher.isWindowsName("Linux"));
+    }
+
+    @Test
     void patchesUpstreamSourcesForGradleCompatibility(@TempDir Path tempDir) throws IOException {
         Path sourceRoot = tempDir.resolve(Path.of("src", "crap4java"));
         Files.createDirectories(sourceRoot);
@@ -59,6 +67,8 @@ class Crap4JavaCompatibilityPatcherTest {
             .contains("CRAP4JAVA_SKIP_BUILD"));
         assertTrue(Files.readString(sourceRoot.resolve("CoverageRunner.java"))
             .contains("\"jacocoTestReport\""));
+        assertTrue(Files.readString(sourceRoot.resolve("CoverageRunner.java"))
+            .contains("startsWith(\"windows\") ? \"gradlew.bat\" : \"./gradlew\""));
         assertFalse(Files.readString(sourceRoot.resolve("CoverageRunner.java"))
             .contains("jacoco-maven-plugin:0.8.12:prepare-agent"));
         assertFalse(Files.readString(sourceRoot.resolve("CoverageRunner.java"))
@@ -69,6 +79,23 @@ class Crap4JavaCompatibilityPatcherTest {
             .contains("Path.of(\"src\", \"main\", \"java\")"));
         assertTrue(Files.readString(sourceRoot.resolve("Main.java"))
             .contains("Analyze all Java files under src/main/java/"));
+    }
+
+    @Test
+    void upgradesLegacyInjectedWrapperDetection(@TempDir Path tempDir) throws IOException {
+        Path sourceRoot = tempDir.resolve(Path.of("src", "crap4java"));
+        Files.createDirectories(sourceRoot);
+        writeSampleSources(sourceRoot);
+        Crap4JavaCompatibilityPatcher.applyCompatibilityPatches(tempDir);
+
+        Path coverageRunner = sourceRoot.resolve("CoverageRunner.java");
+        String legacyInjected = Files.readString(coverageRunner).replace("startsWith(\"windows\")", "contains(\"win\")");
+        Files.writeString(coverageRunner, legacyInjected);
+
+        Crap4JavaCompatibilityPatcher.applyCompatibilityPatches(tempDir);
+
+        assertTrue(Files.readString(coverageRunner).contains("startsWith(\"windows\") ? \"gradlew.bat\" : \"./gradlew\""));
+        assertFalse(Files.readString(coverageRunner).contains("contains(\"win\") ? \"gradlew.bat\" : \"./gradlew\""));
     }
 
     private void writeSampleSources(Path sourceRoot) throws IOException {
