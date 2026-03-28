@@ -171,7 +171,7 @@ final class Crap4JavaGateRunner {
     private JavaCompiler requireSystemJavaCompiler() {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         if (compiler == null) {
-            throw new IllegalStateException("A JDK is required to compile the crap4java helper.");
+            throw new IllegalStateException("A JDK is required to compile crap4java sources and build the gate jar.");
         }
         return compiler;
     }

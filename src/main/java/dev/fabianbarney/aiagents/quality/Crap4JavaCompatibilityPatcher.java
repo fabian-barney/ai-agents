@@ -64,7 +64,7 @@ final class Crap4JavaCompatibilityPatcher {
         Path normalizedCandidate = candidate.toAbsolutePath().normalize();
         if (!normalizedCandidate.startsWith(workRoot)) {
             throw new IllegalArgumentException(
-                "Crap4java work directory must stay under %s but was %s".formatted(workRoot, normalizedCandidate)
+                "Crap4Java work directory must stay under %s but was %s".formatted(workRoot, normalizedCandidate)
             );
         }
         return normalizedCandidate;
