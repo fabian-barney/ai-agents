@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.jar.Attributes;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
@@ -21,8 +22,9 @@ final class Crap4JavaGateRunner {
 
     private static final String GIT_REMOTE_URL = "https://github.com/unclebob/crap4java.git";
     private static final String CRAP4JAVA_COMMIT = "69b561209f130ece728f19b0001e90df5a117c3a";
-    private static final String JACOCO_VERSION = "0.8.13";
+    private static final String JACOCO_VERSION = System.getProperty("jacoco.version", "0.8.13");
     private static final String MAIN_CLASS = "crap4java.Main";
+    private static final long PROCESS_TIMEOUT_SECONDS = 180;
 
     int run(Path projectDirectory) throws Exception {
         Path workDirectory = Crap4JavaCompatibilityPatcher.resolveWorkDirectory(
@@ -65,7 +67,7 @@ final class Crap4JavaGateRunner {
         Files.createDirectories(workDirectory);
     }
 
-    private Path buildJar(Path workDirectory) throws IOException {
+    Path buildJar(Path workDirectory) throws IOException {
         Path sourceDirectory = workDirectory.resolve(Path.of("src", "crap4java"));
         Path classesDirectory = workDirectory.resolve(Path.of("build", "classes"));
         Path jarFile = workDirectory.resolve(Path.of("build", "crap4java.jar"));
@@ -111,11 +113,12 @@ final class Crap4JavaGateRunner {
     }
 
     private int runGate(Path projectDirectory, Path jarFile) throws Exception {
-        ProcessBuilder builder = new ProcessBuilder(
+        List<String> command = List.of(
             Crap4JavaCompatibilityPatcher.javaCommand().toString(),
             "-jar",
             jarFile.toString()
         );
+        ProcessBuilder builder = new ProcessBuilder(command);
         builder.directory(projectDirectory.toFile());
         builder.inheritIO();
         builder.environment().put("CRAP4JAVA_SKIP_BUILD", "true");
@@ -123,7 +126,7 @@ final class Crap4JavaGateRunner {
             "CRAP4JAVA_BUILD_CMD",
             Crap4JavaCompatibilityPatcher.wrapperCommand(Crap4JavaCompatibilityPatcher.isWindows())
         );
-        return builder.start().waitFor();
+        return waitForProcess(builder.start(), command);
     }
 
     private void runCommand(List<String> command, Path directory) throws Exception {
@@ -135,12 +138,9 @@ final class Crap4JavaGateRunner {
 
     private String readCommandOutput(List<String> command, Path directory) throws Exception {
         Process process = startCommand(command, directory);
-        String output;
-        try (var stream = process.getInputStream()) {
-            output = new String(stream.readAllBytes(), StandardCharsets.UTF_8).trim();
-        }
-
-        ensureSuccessfulExit(process.waitFor(), command, output);
+        int exitCode = waitForProcess(process, command);
+        String output = readProcessOutput(process);
+        ensureSuccessfulExit(exitCode, command, output);
         return output;
     }
 
@@ -198,6 +198,22 @@ final class Crap4JavaGateRunner {
         }
         builder.redirectErrorStream(true);
         return builder.start();
+    }
+
+    private int waitForProcess(Process process, List<String> command) throws InterruptedException {
+        if (process.waitFor(PROCESS_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+            return process.exitValue();
+        }
+        process.destroyForcibly();
+        throw new IllegalStateException(
+            "Command timed out after %d seconds: %s".formatted(PROCESS_TIMEOUT_SECONDS, String.join(" ", command))
+        );
+    }
+
+    private String readProcessOutput(Process process) throws IOException {
+        try (var stream = process.getInputStream()) {
+            return new String(stream.readAllBytes(), StandardCharsets.UTF_8).trim();
+        }
     }
 
     private void ensureSuccessfulExit(int exitCode, List<String> command, String output) {

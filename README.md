@@ -66,6 +66,8 @@ Renderer output artifacts from `./gradlew renderAgents` are written under `build
 - Claude: `build/rendered/claude/.claude/agents/*.md`
 - Copilot: `build/rendered/copilot/.github/agents/*.agent.md`
 
+The `crap4javaCheck` helper cache lives under `build/crap4java/`.
+
 Generated target artifacts are build outputs only and are not committed to git.
 
 ## Renderer Configuration
