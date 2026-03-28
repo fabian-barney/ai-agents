@@ -131,6 +131,9 @@ final class Crap4JavaCompatibilityPatcher {
     }
 
     private static String replaceRequired(String content, String original, String replacement, Path file) {
+        if (replacement.isEmpty()) {
+            return removeRequired(content, original, file);
+        }
         if (content.contains(replacement)) {
             return content;
         }
@@ -140,5 +143,12 @@ final class Crap4JavaCompatibilityPatcher {
         throw new IllegalStateException(
             "Unable to find expected upstream snippet in %s.%nExpected:%n%s".formatted(file, original)
         );
+    }
+
+    private static String removeRequired(String content, String original, Path file) {
+        if (!content.contains(original)) {
+            return content;
+        }
+        return content.replace(original, "");
     }
 }

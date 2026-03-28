@@ -60,7 +60,7 @@ the repository's production Java sources. The first run downloads the pinned
 upstream commit into `build/crap4java/`, patches it for this Gradle build, and
 compiles the helper jar locally before executing the gate.
 
-Generated artifacts are written only under `build/rendered/`:
+Renderer output artifacts from `./gradlew renderAgents` are written under `build/rendered/`:
 
 - Codex: `build/rendered/codex/.codex/agents/*.toml`
 - Claude: `build/rendered/claude/.claude/agents/*.md`

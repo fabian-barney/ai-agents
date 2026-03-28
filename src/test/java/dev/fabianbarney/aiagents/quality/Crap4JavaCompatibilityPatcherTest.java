@@ -58,6 +58,8 @@ class Crap4JavaCompatibilityPatcherTest {
             .contains("CRAP4JAVA_SKIP_BUILD"));
         assertTrue(Files.readString(sourceRoot.resolve("CoverageRunner.java"))
             .contains("\"jacocoTestReport\""));
+        assertTrue(!Files.readString(sourceRoot.resolve("CoverageRunner.java"))
+            .contains("jacoco-maven-plugin:0.8.12:prepare-agent"));
         assertTrue(Files.readString(sourceRoot.resolve("SourceFileFinder.java"))
             .contains("Path.of(\"src\", \"main\", \"java\")"));
         assertTrue(Files.readString(sourceRoot.resolve("ChangedFileDetector.java"))
