@@ -1,5 +1,6 @@
 package dev.fabianbarney.aiagents.catalog;
 
+import jakarta.validation.Validation;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -14,7 +15,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AgentDefinitionLoaderTest {
 
-    private final AgentDefinitionLoader loader = new AgentDefinitionLoader();
+    private final AgentDefinitionLoader loader = new AgentDefinitionLoader(
+        Validation.buildDefaultValidatorFactory().getValidator()
+    );
 
     @Test
     void loadsTheCanonicalAgentsFromTheRepository() throws IOException {

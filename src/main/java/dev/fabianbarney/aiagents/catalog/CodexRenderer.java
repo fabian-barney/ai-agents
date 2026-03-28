@@ -1,58 +1,70 @@
 package dev.fabianbarney.aiagents.catalog;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.nio.file.Path;
 
 @Component
+@RequiredArgsConstructor
 final class CodexRenderer extends BaseRenderer {
 
+    private final RendererProperties rendererProperties;
+
     @Override
-    protected String compatibleProvider() {
-        return "openai";
+    protected ProviderId compatibleProvider() {
+        return rendererProperties.getCodex().getCompatibleProvider();
     }
 
     @Override
-    protected String defaultModel() {
-        return "gpt-5.4";
+    protected ModelId defaultModel() {
+        return rendererProperties.getCodex().getDefaultModel();
     }
 
     @Override
     protected Path relativePath(AgentDefinition agent) {
-        return Path.of("codex", ".codex", "agents", "%s.toml".formatted(agent.id()));
+        RendererProperties.Codex properties = rendererProperties.getCodex();
+        return properties.getOutputDirectory().resolve("%s%s".formatted(agent.id(), properties.getFileSuffix()));
     }
 
     @Override
     protected String renderContent(AgentDefinition agent) {
+        RendererProperties.Codex properties = rendererProperties.getCodex();
         CodexOverrides overrides = agent.platformOverrides().codex();
         StringBuilder builder = new StringBuilder();
-        builder.append("name = ").append(quoted(agent.name())).append(System.lineSeparator());
-        builder.append("description = ").append(quoted(description(agent, overrides))).append(System.lineSeparator());
-        builder.append("model = ").append(quoted(selectedModel(agent, overrides.model()))).append(System.lineSeparator());
+        builder.append(properties.getNameKey()).append(" = ").append(quoted(agent.name())).append(System.lineSeparator());
+        builder.append(properties.getDescriptionKey()).append(" = ")
+            .append(quoted(description(agent, overrides)))
+            .append(System.lineSeparator());
+        builder.append(properties.getModelKey()).append(" = ")
+            .append(quoted(selectedModel(agent, overrides.model()).value()))
+            .append(System.lineSeparator());
 
         String reasoningEffort = selectedReasoningEffort(agent, overrides.modelReasoningEffort());
         if (reasoningEffort != null) {
-            builder.append("model_reasoning_effort = ")
+            builder.append(properties.getModelReasoningEffortKey()).append(" = ")
                 .append(quoted(reasoningEffort))
                 .append(System.lineSeparator());
         }
         if (overrides.sandboxMode() != null && !overrides.sandboxMode().isBlank()) {
-            builder.append("sandbox_mode = ").append(quoted(overrides.sandboxMode())).append(System.lineSeparator());
+            builder.append(properties.getSandboxModeKey()).append(" = ")
+                .append(quoted(overrides.sandboxMode()))
+                .append(System.lineSeparator());
         }
         if (!overrides.mcpServers().isEmpty()) {
-            builder.append("mcp_servers = [")
+            builder.append(properties.getMcpServersKey()).append(" = [")
                 .append(renderTomlArray(overrides.mcpServers()))
                 .append(']')
                 .append(System.lineSeparator());
         }
         if (!overrides.nicknameCandidates().isEmpty()) {
-            builder.append("nickname_candidates = [")
+            builder.append(properties.getNicknameCandidatesKey()).append(" = [")
                 .append(renderTomlArray(overrides.nicknameCandidates()))
                 .append(']')
                 .append(System.lineSeparator());
         }
 
-        builder.append("developer_instructions = ")
+        builder.append(properties.getDeveloperInstructionsKey()).append(" = ")
             .append(tomlLiteralBlock(agent.prompt()))
             .append(System.lineSeparator());
         return builder.toString();

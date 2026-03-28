@@ -1,37 +1,45 @@
 package dev.fabianbarney.aiagents.catalog;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.nio.file.Path;
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 final class ClaudeRenderer extends BaseRenderer {
 
+    private final RendererProperties rendererProperties;
+
     @Override
-    protected String compatibleProvider() {
-        return "anthropic";
+    protected ProviderId compatibleProvider() {
+        return rendererProperties.getClaude().getCompatibleProvider();
     }
 
     @Override
-    protected String defaultModel() {
-        return "claude-sonnet-4-5";
+    protected ModelId defaultModel() {
+        return rendererProperties.getClaude().getDefaultModel();
     }
 
     @Override
     protected Path relativePath(AgentDefinition agent) {
-        return Path.of("claude", ".claude", "agents", "%s.md".formatted(agent.id()));
+        RendererProperties.Claude properties = rendererProperties.getClaude();
+        return properties.getOutputDirectory().resolve("%s%s".formatted(agent.id(), properties.getFileSuffix()));
     }
 
     @Override
     protected String renderContent(AgentDefinition agent) {
+        RendererProperties.Claude properties = rendererProperties.getClaude();
         ClaudeOverrides overrides = agent.platformOverrides().claude();
         StringBuilder builder = new StringBuilder();
-        builder.append("---").append(System.lineSeparator());
-        builder.append("name: ").append(yamlQuoted(agent.id())).append(System.lineSeparator());
-        builder.append("description: ").append(yamlQuoted(description(agent, overrides))).append(System.lineSeparator());
-        renderStringList(builder, "tools", overrides.tools());
-        builder.append("---").append(System.lineSeparator()).append(System.lineSeparator());
+        builder.append(properties.getFrontmatterDelimiter()).append(System.lineSeparator());
+        builder.append(properties.getNameKey()).append(": ").append(yamlQuoted(agent.id())).append(System.lineSeparator());
+        builder.append(properties.getDescriptionKey()).append(": ")
+            .append(yamlQuoted(description(agent, overrides)))
+            .append(System.lineSeparator());
+        renderStringList(builder, properties.getToolsKey(), overrides.tools());
+        builder.append(properties.getFrontmatterDelimiter()).append(System.lineSeparator()).append(System.lineSeparator());
         builder.append(markdownBody(agent.prompt()));
         return builder.toString();
     }

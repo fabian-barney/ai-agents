@@ -1,11 +1,13 @@
 package dev.fabianbarney.aiagents.catalog;
 
+import jakarta.validation.Valid;
+
 import java.util.List;
 
 public record PlatformOverrides(
-    CodexOverrides codex,
-    ClaudeOverrides claude,
-    CopilotOverrides copilot
+    @Valid CodexOverrides codex,
+    @Valid ClaudeOverrides claude,
+    @Valid CopilotOverrides copilot
 ) {
     public PlatformOverrides {
         codex = codex == null ? CodexOverrides.empty() : codex;
@@ -20,7 +22,7 @@ public record PlatformOverrides(
 
 record CodexOverrides(
     String description,
-    String model,
+    @Valid ModelId model,
     String modelReasoningEffort,
     String sandboxMode,
     List<String> mcpServers,
@@ -51,7 +53,7 @@ record ClaudeOverrides(
 
 record CopilotOverrides(
     String description,
-    String model,
+    @Valid ModelId model,
     List<String> tools,
     List<String> mcpServers,
     String target

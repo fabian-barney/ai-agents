@@ -3,6 +3,7 @@ package dev.fabianbarney.aiagents.catalog;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 
 interface Renderer {
     void renderAll(List<AgentDefinition> agents, Path outputRoot) throws IOException;
@@ -10,9 +11,9 @@ interface Renderer {
 
 abstract class BaseRenderer implements Renderer {
 
-    protected abstract String compatibleProvider();
+    protected abstract ProviderId compatibleProvider();
 
-    protected abstract String defaultModel();
+    protected abstract ModelId defaultModel();
 
     protected abstract Path relativePath(AgentDefinition agent);
 
@@ -26,15 +27,13 @@ abstract class BaseRenderer implements Renderer {
         }
     }
 
-    protected final String selectedModel(AgentDefinition agent, String overrideModel) {
+    protected final ModelId selectedModel(AgentDefinition agent, ModelId overrideModel) {
         if (overrideModel != null && !overrideModel.isBlank()) {
             return overrideModel;
         }
 
-        return agent.preferredModels().stream()
-            .filter(model -> compatibleProvider().equals(model.provider()))
+        return selectedPreferredModel(agent)
             .map(PreferredModel::model)
-            .findFirst()
             .orElse(defaultModel());
     }
 
@@ -43,12 +42,16 @@ abstract class BaseRenderer implements Renderer {
             return overrideReasoningEffort;
         }
 
-        return agent.preferredModels().stream()
-            .filter(model -> compatibleProvider().equals(model.provider()))
+        return selectedPreferredModel(agent)
             .map(PreferredModel::reasoningEffort)
             .filter(value -> value != null && !value.isBlank())
-            .findFirst()
             .orElse(null);
+    }
+
+    private Optional<PreferredModel> selectedPreferredModel(AgentDefinition agent) {
+        return agent.preferredModels().stream()
+            .filter(model -> compatibleProvider().equals(model.provider()))
+            .findFirst();
     }
 
     protected final void writeFile(Path outputPath, String content) throws IOException {

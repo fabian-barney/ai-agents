@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -16,14 +19,12 @@ import java.util.List;
 import java.util.Map;
 
 @Component
+@RequiredArgsConstructor
 public final class AgentDefinitionLoader {
 
-    private final ObjectMapper mapper;
-
-    public AgentDefinitionLoader() {
-        this.mapper = new ObjectMapper(new YAMLFactory())
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
-    }
+    private final Validator validator;
+    private final ObjectMapper mapper = new ObjectMapper(new YAMLFactory())
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
 
     public List<AgentDefinition> load(Path inputDirectory) throws IOException {
         if (!Files.isDirectory(inputDirectory)) {
@@ -59,16 +60,7 @@ public final class AgentDefinitionLoader {
     }
 
     private void validateTree(Path agentFile, JsonNode rootNode) {
-        requireNonEmptyArray(agentFile, rootNode, "whenToUse");
-        requireNonEmptyArray(agentFile, rootNode, "boundaries");
         requireOptionalNonEmptyArray(agentFile, rootNode, "preferredModels");
-    }
-
-    private void requireNonEmptyArray(Path agentFile, JsonNode rootNode, String fieldName) {
-        JsonNode node = rootNode.get(fieldName);
-        if (node == null || !node.isArray() || node.isEmpty()) {
-            throw validationError(agentFile, "%s must be a non-empty list".formatted(fieldName));
-        }
     }
 
     private void requireOptionalNonEmptyArray(Path agentFile, JsonNode rootNode, String fieldName) {
@@ -79,16 +71,7 @@ public final class AgentDefinitionLoader {
     }
 
     private void validateDefinition(Path agentFile, AgentDefinition definition, Map<String, Path> seenIds) {
-        requireNonBlank(agentFile, "id", definition.id());
-        requireNonBlank(agentFile, "name", definition.name());
-        requireNonBlank(agentFile, "purpose", definition.purpose());
-        requireNonBlank(agentFile, "prompt", definition.prompt());
-        requireNonBlankValues(agentFile, "whenToUse", definition.whenToUse());
-        requireNonBlankValues(agentFile, "boundaries", definition.boundaries());
-        requireNonBlankValues(agentFile, "aliases", definition.aliases());
-        requireNonBlankValues(agentFile, "examples", definition.examples());
-        requireNonBlankValues(agentFile, "toolHints", definition.toolHints());
-        requireNonBlankValues(agentFile, "notes", definition.notes());
+        validateBean(agentFile, definition);
 
         Path previousPath = seenIds.putIfAbsent(definition.id(), agentFile);
         if (previousPath != null) {
@@ -97,28 +80,31 @@ public final class AgentDefinitionLoader {
                 "Duplicate agent id '%s' already defined in %s".formatted(definition.id(), previousPath)
             );
         }
-
-        for (PreferredModel preferredModel : definition.preferredModels()) {
-            requireNonBlank(agentFile, "preferredModels.provider", preferredModel.provider());
-            requireNonBlank(agentFile, "preferredModels.model", preferredModel.model());
-        }
-    }
-
-    private void requireNonBlank(Path agentFile, String fieldName, String value) {
-        if (value == null || value.isBlank()) {
-            throw validationError(agentFile, "%s must be non-blank".formatted(fieldName));
-        }
-    }
-
-    private void requireNonBlankValues(Path agentFile, String fieldName, List<String> values) {
-        for (String value : values) {
-            if (value == null || value.isBlank()) {
-                throw validationError(agentFile, "%s must not contain blank entries".formatted(fieldName));
-            }
-        }
     }
 
     private IllegalArgumentException validationError(Path agentFile, String message) {
         return new IllegalArgumentException("%s: %s".formatted(agentFile, message));
+    }
+
+    private void validateBean(Path agentFile, AgentDefinition definition) {
+        List<String> violations = validator.validate(definition).stream()
+            .map(this::formatViolation)
+            .sorted()
+            .toList();
+
+        if (!violations.isEmpty()) {
+            throw validationError(agentFile, String.join("; ", violations));
+        }
+    }
+
+    private String formatViolation(ConstraintViolation<?> violation) {
+        String path = violation.getPropertyPath().toString()
+            .replaceAll("\\[[0-9]+\\]", "")
+            .replace(".<list element>", "")
+            .replace(".value", "");
+
+        return path.isBlank()
+            ? violation.getMessage()
+            : "%s %s".formatted(path, violation.getMessage());
     }
 }

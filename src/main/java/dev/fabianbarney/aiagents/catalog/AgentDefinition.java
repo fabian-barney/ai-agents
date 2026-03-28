@@ -1,20 +1,24 @@
 package dev.fabianbarney.aiagents.catalog;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+
 import java.util.List;
 
 public record AgentDefinition(
-    String id,
-    String name,
-    String purpose,
-    List<String> whenToUse,
-    List<String> boundaries,
-    String prompt,
-    List<String> aliases,
-    List<String> examples,
-    List<String> toolHints,
-    List<String> notes,
-    List<PreferredModel> preferredModels,
-    PlatformOverrides platformOverrides
+    @NotBlank(message = "must be non-blank") String id,
+    @NotBlank(message = "must be non-blank") String name,
+    @NotBlank(message = "must be non-blank") String purpose,
+    @NotEmpty(message = "must be a non-empty list") List<@NotBlank(message = "must be non-blank") String> whenToUse,
+    @NotEmpty(message = "must be a non-empty list") List<@NotBlank(message = "must be non-blank") String> boundaries,
+    @NotBlank(message = "must be non-blank") String prompt,
+    List<@NotBlank(message = "must be non-blank") String> aliases,
+    List<@NotBlank(message = "must be non-blank") String> examples,
+    List<@NotBlank(message = "must be non-blank") String> toolHints,
+    List<@NotBlank(message = "must be non-blank") String> notes,
+    List<@Valid PreferredModel> preferredModels,
+    @Valid PlatformOverrides platformOverrides
 ) {
 
     public AgentDefinition {

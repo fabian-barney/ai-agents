@@ -1,5 +1,6 @@
 package dev.fabianbarney.aiagents.catalog;
 
+import jakarta.validation.Validation;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -12,32 +13,40 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RendererIntegrationTest {
 
+    private final RendererProperties rendererProperties = new RendererProperties();
     private final AgentCatalogService service = new AgentCatalogService(
-        new AgentDefinitionLoader(),
-        List.of(new CodexRenderer(), new ClaudeRenderer(), new CopilotRenderer())
+        new AgentDefinitionLoader(Validation.buildDefaultValidatorFactory().getValidator()),
+        List.of(
+            new CodexRenderer(rendererProperties),
+            new ClaudeRenderer(rendererProperties),
+            new CopilotRenderer(rendererProperties)
+        )
     );
 
     @Test
-    void rendersAllExpectedFilesIntoTargetSpecificDirectories(@TempDir Path tempDir) throws IOException {
-        service.renderCatalog(projectPath("agents"), tempDir);
+    void rendersAllExpectedFilesIntoTargetSpecificDirectories() throws IOException {
+        Path outputDirectory = generatedOutputDirectory();
+        service.renderCatalog(projectPath("agents"), outputDirectory);
 
         for (String agentId : List.of("orchestrator", "explorer", "implementer", "reviewer")) {
-            assertTrue(Files.exists(tempDir.resolve(Path.of("codex", ".codex", "agents", agentId + ".toml"))));
-            assertTrue(Files.exists(tempDir.resolve(Path.of("claude", ".claude", "agents", agentId + ".md"))));
-            assertTrue(Files.exists(tempDir.resolve(Path.of("copilot", ".github", "agents", agentId + ".agent.md"))));
+            assertTrue(Files.exists(outputDirectory.resolve(Path.of("codex", ".codex", "agents", agentId + ".toml"))));
+            assertTrue(Files.exists(outputDirectory.resolve(Path.of("claude", ".claude", "agents", agentId + ".md"))));
+            assertTrue(Files.exists(outputDirectory.resolve(Path.of("copilot", ".github", "agents", agentId + ".agent.md"))));
         }
     }
 
     @Test
-    void codexOutputIncludesModelSelectionAndSandboxOverrides(@TempDir Path tempDir) throws IOException {
-        service.renderCatalog(projectPath("agents"), tempDir);
+    void codexOutputIncludesModelSelectionAndSandboxOverrides() throws IOException {
+        Path outputDirectory = generatedOutputDirectory();
+        service.renderCatalog(projectPath("agents"), outputDirectory);
 
         String rendered = Files.readString(
-            tempDir.resolve(Path.of("codex", ".codex", "agents", "implementer.toml"))
+            outputDirectory.resolve(Path.of("codex", ".codex", "agents", "implementer.toml"))
         );
 
         assertTrue(rendered.contains("name = \"Implementer\""));
@@ -48,11 +57,12 @@ class RendererIntegrationTest {
     }
 
     @Test
-    void claudeOutputIncludesFrontmatterAndPromptBody(@TempDir Path tempDir) throws IOException {
-        service.renderCatalog(projectPath("agents"), tempDir);
+    void claudeOutputIncludesFrontmatterAndPromptBody() throws IOException {
+        Path outputDirectory = generatedOutputDirectory();
+        service.renderCatalog(projectPath("agents"), outputDirectory);
 
         String rendered = Files.readString(
-            tempDir.resolve(Path.of("claude", ".claude", "agents", "explorer.md"))
+            outputDirectory.resolve(Path.of("claude", ".claude", "agents", "explorer.md"))
         );
 
         assertTrue(rendered.startsWith("---"));
@@ -63,11 +73,12 @@ class RendererIntegrationTest {
     }
 
     @Test
-    void copilotOutputIncludesFrontmatterAndPromptBody(@TempDir Path tempDir) throws IOException {
-        service.renderCatalog(projectPath("agents"), tempDir);
+    void copilotOutputIncludesFrontmatterAndPromptBody() throws IOException {
+        Path outputDirectory = generatedOutputDirectory();
+        service.renderCatalog(projectPath("agents"), outputDirectory);
 
         String rendered = Files.readString(
-            tempDir.resolve(Path.of("copilot", ".github", "agents", "reviewer.agent.md"))
+            outputDirectory.resolve(Path.of("copilot", ".github", "agents", "reviewer.agent.md"))
         );
 
         assertTrue(rendered.startsWith("---"));
@@ -78,14 +89,24 @@ class RendererIntegrationTest {
     }
 
     @Test
-    void renderingIsDeterministicAcrossRepeatedRuns(@TempDir Path tempDir) throws IOException {
-        Path firstRun = tempDir.resolve("first");
-        Path secondRun = tempDir.resolve("second");
+    void renderingIsDeterministicAcrossRepeatedRuns() throws IOException {
+        Path firstRun = generatedOutputDirectory();
+        Path secondRun = generatedOutputDirectory();
 
         service.renderCatalog(projectPath("agents"), firstRun);
         service.renderCatalog(projectPath("agents"), secondRun);
 
         assertEquals(readRenderedFiles(firstRun), readRenderedFiles(secondRun));
+    }
+
+    @Test
+    void rejectsOutputDirectoriesOutsideTheConfiguredSafeRoot(@TempDir Path tempDir) {
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> service.renderCatalog(projectPath("agents"), tempDir.resolve("unsafe-output"))
+        );
+
+        assertTrue(exception.getMessage().contains("Catalog output directory must be located under"));
     }
 
     private Map<String, String> readRenderedFiles(Path rootDirectory) throws IOException {
@@ -111,5 +132,11 @@ class RendererIntegrationTest {
 
     private Path projectPath(String relativePath) {
         return Path.of(System.getProperty("user.dir"), relativePath).toAbsolutePath().normalize();
+    }
+
+    private Path generatedOutputDirectory() throws IOException {
+        Path testOutputRoot = projectPath(Path.of("build", "rendered", "test").toString());
+        Files.createDirectories(testOutputRoot);
+        return Files.createTempDirectory(testOutputRoot, "renderer-");
     }
 }

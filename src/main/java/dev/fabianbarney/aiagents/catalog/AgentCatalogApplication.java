@@ -6,7 +6,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-@EnableConfigurationProperties(CatalogProperties.class)
+@EnableConfigurationProperties({CatalogProperties.class, RendererProperties.class})
 public class AgentCatalogApplication {
 
     public static void main(String[] args) {
