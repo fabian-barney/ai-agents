@@ -51,8 +51,14 @@ Use the Gradle wrapper:
 
 ```bash
 ./gradlew check
+./gradlew crap4javaCheck
 ./gradlew renderAgents
 ```
+
+`./gradlew crap4javaCheck` runs the pinned upstream `crap4java` tool against
+the repository's production Java sources. The first run downloads the pinned
+upstream commit into `build/crap4java/`, patches it for this Gradle build, and
+compiles the helper jar locally before executing the gate.
 
 Generated artifacts are written only under `build/rendered/`:
 
