@@ -18,6 +18,7 @@ jobs:
           distribution: temurin
           java-version: '25'
           cache: gradle
+      - run: chmod +x ./gradlew
       - run: ./gradlew check
 
   markdownlint:
