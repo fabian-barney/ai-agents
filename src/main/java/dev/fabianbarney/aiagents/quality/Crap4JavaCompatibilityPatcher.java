@@ -48,6 +48,7 @@ final class Crap4JavaCompatibilityPatcher {
     private static final String GRADLE_PREPARE_GOAL = "";
     private static final String ORIGINAL_REPORT_GOAL = "\"org.jacoco:jacoco-maven-plugin:0.8.12:report\"";
     private static final String GRADLE_REPORT_GOAL = "\"jacocoTestReport\"";
+    private static final String LEGACY_JACOCO_MAVEN_PLUGIN_MARKER = "jacoco-maven-plugin";
 
     private Crap4JavaCompatibilityPatcher() {
     }
@@ -107,6 +108,7 @@ final class Crap4JavaCompatibilityPatcher {
         content = replaceRequired(content, ORIGINAL_BUILD_COMMAND, GRADLE_BUILD_COMMAND, file);
         content = replaceRequired(content, ORIGINAL_PREPARE_GOAL, GRADLE_PREPARE_GOAL, file);
         content = replaceRequired(content, ORIGINAL_REPORT_GOAL, GRADLE_REPORT_GOAL, file);
+        ensureAbsent(content, LEGACY_JACOCO_MAVEN_PLUGIN_MARKER, file);
         Files.writeString(file, content);
     }
 
@@ -150,5 +152,13 @@ final class Crap4JavaCompatibilityPatcher {
             return content;
         }
         return content.replace(original, "");
+    }
+
+    private static void ensureAbsent(String content, String forbiddenSnippet, Path file) {
+        if (content.contains(forbiddenSnippet)) {
+            throw new IllegalStateException(
+                "Unexpected upstream snippet remained in %s.%nForbidden:%n%s".formatted(file, forbiddenSnippet)
+            );
+        }
     }
 }

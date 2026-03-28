@@ -25,6 +25,7 @@ final class Crap4JavaGateRunner {
     private static final String JACOCO_VERSION = System.getProperty("jacoco.version", "0.8.13");
     private static final String MAIN_CLASS = "crap4java.Main";
     private static final long PROCESS_TIMEOUT_SECONDS = 180;
+    private static final long FORCEFUL_TERMINATION_TIMEOUT_SECONDS = 5;
 
     int run(Path projectDirectory) throws Exception {
         Path workDirectory = Crap4JavaCompatibilityPatcher.resolveWorkDirectory(
@@ -210,9 +211,20 @@ final class Crap4JavaGateRunner {
         if (process.waitFor(PROCESS_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
             return process.exitValue();
         }
+        throw timeoutException(process, command);
+    }
+
+    private IllegalStateException timeoutException(Process process, List<String> command) throws InterruptedException {
         process.destroyForcibly();
-        throw new IllegalStateException(
-            "Command timed out after %d seconds: %s".formatted(PROCESS_TIMEOUT_SECONDS, String.join(" ", command))
+        boolean terminated = process.waitFor(FORCEFUL_TERMINATION_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+        Integer exitCode = terminated ? process.exitValue() : null;
+        return new IllegalStateException(
+            "Command timed out after %d seconds: %s (processTerminated=%s, exitCode=%s)".formatted(
+                PROCESS_TIMEOUT_SECONDS,
+                String.join(" ", command),
+                terminated,
+                exitCode
+            )
         );
     }
 
