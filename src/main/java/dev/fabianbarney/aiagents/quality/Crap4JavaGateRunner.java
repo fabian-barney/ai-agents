@@ -152,7 +152,7 @@ final class Crap4JavaGateRunner {
             ensureSuccessfulExit(exitCode, command, output);
             return output;
         } finally {
-            Files.deleteIfExists(outputFile);
+            deleteOutputFile(outputFile);
         }
     }
 
@@ -221,6 +221,14 @@ final class Crap4JavaGateRunner {
             return exception;
         }
         return new IllegalStateException("%s%n%s".formatted(exception.getMessage(), output), exception);
+    }
+
+    private void deleteOutputFile(Path outputFile) {
+        try {
+            Files.deleteIfExists(outputFile);
+        } catch (IOException cleanupException) {
+            outputFile.toFile().deleteOnExit();
+        }
     }
 
     private Process startCommand(List<String> command, Path directory, Path outputFile) throws IOException {
