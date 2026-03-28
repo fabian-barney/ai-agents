@@ -6,7 +6,7 @@ import java.nio.file.Path;
 
 final class Crap4JavaCompatibilityPatcher {
 
-    private static final String WORK_DIRECTORY_PREFIX = "build/crap4java";
+    private static final Path WORK_DIRECTORY_ROOT = Path.of("build", "crap4java");
     private static final String ORIGINAL_JACOCO_XML = "moduleRoot.resolve(\"target/site/jacoco/jacoco.xml\")";
     private static final String GRADLE_JACOCO_XML =
         "moduleRoot.resolve(\"build/reports/jacoco/test/jacocoTestReport.xml\")";
@@ -54,13 +54,13 @@ final class Crap4JavaCompatibilityPatcher {
 
     static Path resolveWorkDirectory(Path projectDirectory, String commit, String jacocoVersion) {
         Path candidate = projectDirectory.resolve(
-            Path.of("build", "crap4java", "%s-jacoco-%s".formatted(commit, jacocoVersion))
+            WORK_DIRECTORY_ROOT.resolve("%s-jacoco-%s".formatted(commit, jacocoVersion))
         );
         return validateWorkDirectory(projectDirectory, candidate);
     }
 
     static Path validateWorkDirectory(Path projectDirectory, Path candidate) {
-        Path workRoot = projectDirectory.resolve(WORK_DIRECTORY_PREFIX).toAbsolutePath().normalize();
+        Path workRoot = projectDirectory.resolve(WORK_DIRECTORY_ROOT).toAbsolutePath().normalize();
         Path normalizedCandidate = candidate.toAbsolutePath().normalize();
         if (!normalizedCandidate.startsWith(workRoot)) {
             throw new IllegalArgumentException(
