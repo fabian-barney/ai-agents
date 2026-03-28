@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
@@ -141,8 +142,13 @@ final class Crap4JavaGateRunner {
         Path outputFile = Files.createTempFile("crap4java-gate-", ".log");
         try {
             Process process = startCommand(command, directory, outputFile);
-            int exitCode = waitForProcess(process, command);
-            String output = Files.readString(outputFile, StandardCharsets.UTF_8).trim();
+            int exitCode;
+            try {
+                exitCode = waitForProcess(process, command);
+            } catch (IllegalStateException exception) {
+                throw enrichWithCapturedOutput(exception, outputFile);
+            }
+            String output = readCapturedOutput(outputFile);
             ensureSuccessfulExit(exitCode, command, output);
             return output;
         } finally {
@@ -151,10 +157,18 @@ final class Crap4JavaGateRunner {
     }
 
     private void deleteDirectoryIfPresent(Path directory) throws IOException {
-        if (!Files.exists(directory)) {
+        if (!Files.exists(directory, LinkOption.NOFOLLOW_LINKS)) {
+            return;
+        }
+        if (deletesAsSingleEntry(directory)) {
+            Files.deleteIfExists(directory);
             return;
         }
         deleteDirectory(directory);
+    }
+
+    private boolean deletesAsSingleEntry(Path directory) throws IOException {
+        return !Files.isDirectory(directory, LinkOption.NOFOLLOW_LINKS) || Files.isSymbolicLink(directory);
     }
 
     private void deleteDirectory(Path directory) throws IOException {
@@ -195,6 +209,18 @@ final class Crap4JavaGateRunner {
             .map(Object::toString)
             .collect(Collectors.joining(System.lineSeparator()));
         throw new IllegalStateException("Failed to compile crap4java sources:%n%s".formatted(messages));
+    }
+
+    private String readCapturedOutput(Path outputFile) throws IOException {
+        return Files.readString(outputFile, StandardCharsets.UTF_8).trim();
+    }
+
+    private IllegalStateException enrichWithCapturedOutput(IllegalStateException exception, Path outputFile) throws IOException {
+        String output = readCapturedOutput(outputFile);
+        if (output.isBlank()) {
+            return exception;
+        }
+        return new IllegalStateException("%s%n%s".formatted(exception.getMessage(), output), exception);
     }
 
     private Process startCommand(List<String> command, Path directory, Path outputFile) throws IOException {
