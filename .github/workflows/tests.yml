@@ -31,7 +31,7 @@ jobs:
         run: ./gradlew check
 
   crap4java-gate:
-    name: Crap4java Gate
+    name: Crap4Java Gate
     runs-on: ubuntu-latest
 
     steps:
