@@ -132,7 +132,7 @@ final class Crap4JavaCompatibilityPatcher {
 
     private static String replaceRequired(String content, String original, String replacement, Path file) {
         if (replacement.isEmpty()) {
-            return removeRequired(content, original, file);
+            return removeRequired(content, original);
         }
         if (content.contains(replacement)) {
             return content;
@@ -145,7 +145,7 @@ final class Crap4JavaCompatibilityPatcher {
         );
     }
 
-    private static String removeRequired(String content, String original, Path file) {
+    private static String removeRequired(String content, String original) {
         if (!content.contains(original)) {
             return content;
         }

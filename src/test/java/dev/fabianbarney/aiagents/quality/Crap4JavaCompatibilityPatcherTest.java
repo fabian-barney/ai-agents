@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -58,7 +59,7 @@ class Crap4JavaCompatibilityPatcherTest {
             .contains("CRAP4JAVA_SKIP_BUILD"));
         assertTrue(Files.readString(sourceRoot.resolve("CoverageRunner.java"))
             .contains("\"jacocoTestReport\""));
-        assertTrue(!Files.readString(sourceRoot.resolve("CoverageRunner.java"))
+        assertFalse(Files.readString(sourceRoot.resolve("CoverageRunner.java"))
             .contains("jacoco-maven-plugin:0.8.12:prepare-agent"));
         assertTrue(Files.readString(sourceRoot.resolve("SourceFileFinder.java"))
             .contains("Path.of(\"src\", \"main\", \"java\")"));

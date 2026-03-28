@@ -137,11 +137,16 @@ final class Crap4JavaGateRunner {
     }
 
     private String readCommandOutput(List<String> command, Path directory) throws Exception {
-        Process process = startCommand(command, directory);
-        int exitCode = waitForProcess(process, command);
-        String output = readProcessOutput(process);
-        ensureSuccessfulExit(exitCode, command, output);
-        return output;
+        Path outputFile = Files.createTempFile("crap4java-gate-", ".log");
+        try {
+            Process process = startCommand(command, directory, outputFile);
+            int exitCode = waitForProcess(process, command);
+            String output = Files.readString(outputFile, StandardCharsets.UTF_8).trim();
+            ensureSuccessfulExit(exitCode, command, output);
+            return output;
+        } finally {
+            Files.deleteIfExists(outputFile);
+        }
     }
 
     private void deleteDirectoryIfPresent(Path directory) throws IOException {
@@ -191,12 +196,13 @@ final class Crap4JavaGateRunner {
         throw new IllegalStateException("Failed to compile crap4java sources:%n%s".formatted(messages));
     }
 
-    private Process startCommand(List<String> command, Path directory) throws IOException {
+    private Process startCommand(List<String> command, Path directory, Path outputFile) throws IOException {
         ProcessBuilder builder = new ProcessBuilder(command);
         if (directory != null) {
             builder.directory(directory.toFile());
         }
         builder.redirectErrorStream(true);
+        builder.redirectOutput(outputFile.toFile());
         return builder.start();
     }
 
@@ -208,12 +214,6 @@ final class Crap4JavaGateRunner {
         throw new IllegalStateException(
             "Command timed out after %d seconds: %s".formatted(PROCESS_TIMEOUT_SECONDS, String.join(" ", command))
         );
-    }
-
-    private String readProcessOutput(Process process) throws IOException {
-        try (var stream = process.getInputStream()) {
-            return new String(stream.readAllBytes(), StandardCharsets.UTF_8).trim();
-        }
     }
 
     private void ensureSuccessfulExit(int exitCode, List<String> command, String output) {

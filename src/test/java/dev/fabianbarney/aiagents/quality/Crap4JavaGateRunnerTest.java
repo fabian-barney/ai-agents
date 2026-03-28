@@ -6,6 +6,7 @@ import org.junit.jupiter.api.io.TempDir;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.TimeUnit;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 
@@ -45,12 +46,17 @@ class Crap4JavaGateRunnerTest {
             "-jar",
             jarFile.toString()
         ).redirectErrorStream(true).start();
+        boolean finished = process.waitFor(30, TimeUnit.SECONDS);
+        if (!finished) {
+            process.destroyForcibly();
+        }
+        assertTrue(finished, "Timed out waiting for the runnable crap4java jar to exit.");
         String output;
         try (var stream = process.getInputStream()) {
             output = new String(stream.readAllBytes(), StandardCharsets.UTF_8).trim();
         }
 
-        assertEquals(0, process.waitFor());
+        assertEquals(0, process.exitValue());
         assertEquals("runner-test-ok", output);
     }
 }
