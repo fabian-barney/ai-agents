@@ -1,11 +1,13 @@
 plugins {
     id 'java'
+    id 'jacoco'
     id 'org.springframework.boot' version '3.5.13'
 }
 
 group = 'dev.fabianbarney.aiagents'
 version = '0.1.0-SNAPSHOT'
 def lombokVersion = '1.18.44'
+def jacocoVersion = '0.8.13'
 
 repositories {
     mavenCentral()
@@ -14,6 +16,10 @@ repositories {
 java {
     sourceCompatibility = JavaVersion.VERSION_25
     targetCompatibility = JavaVersion.VERSION_25
+}
+
+jacoco {
+    toolVersion = jacocoVersion
 }
 
 dependencies {
@@ -54,6 +60,25 @@ tasks.register('renderAgents', JavaExec) {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+tasks.named('jacocoTestReport') {
+    dependsOn(tasks.named('test'))
+    reports {
+        xml.required = true
+        csv.required = false
+        html.required = false
+    }
+}
+
+tasks.register('crap4javaCheck', JavaExec) {
+    group = 'verification'
+    description = 'Run the crap4java quality gate against production Java sources.'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'dev.fabianbarney.aiagents.quality.Crap4JavaGateApplication'
+    workingDir = layout.projectDirectory.asFile
+    systemProperty 'jacoco.version', jacocoVersion
+    dependsOn(tasks.named('classes'), tasks.named('jacocoTestReport'))
 }
 
 tasks.named('check') {
