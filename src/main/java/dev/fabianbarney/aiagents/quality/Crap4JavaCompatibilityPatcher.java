@@ -3,6 +3,7 @@ package dev.fabianbarney.aiagents.quality;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Locale;
 
 final class Crap4JavaCompatibilityPatcher {
 
@@ -44,10 +45,18 @@ final class Crap4JavaCompatibilityPatcher {
                 "--no-daemon",
                 "-q"
         """;
-    private static final String GRADLE_BUILD_COMMAND = """
+    private static final String PREVIOUS_GRADLE_BUILD_COMMAND = """
                 System.getenv().getOrDefault(
                         "CRAP4JAVA_BUILD_CMD",
                         System.getProperty("os.name").toLowerCase().startsWith("windows") ? "gradlew.bat" : "./gradlew"
+                ),
+                "--no-daemon",
+                "-q"
+        """;
+    private static final String GRADLE_BUILD_COMMAND = """
+                System.getenv().getOrDefault(
+                        "CRAP4JAVA_BUILD_CMD",
+                        System.getProperty("os.name").toLowerCase(java.util.Locale.ROOT).startsWith("windows") ? "gradlew.bat" : "./gradlew"
                 ),
                 "--no-daemon",
                 "-q"
@@ -84,7 +93,7 @@ final class Crap4JavaCompatibilityPatcher {
     }
 
     static boolean isWindowsName(String osName) {
-        return osName != null && osName.toLowerCase().startsWith("windows");
+        return osName != null && osName.toLowerCase(Locale.ROOT).startsWith("windows");
     }
 
     static String wrapperCommand(boolean windows) {
@@ -116,6 +125,7 @@ final class Crap4JavaCompatibilityPatcher {
     private static void patchCoverageRunner(Path file) throws IOException {
         String content = Files.readString(file);
         content = content.replace(LEGACY_GRADLE_BUILD_COMMAND, GRADLE_BUILD_COMMAND);
+        content = content.replace(PREVIOUS_GRADLE_BUILD_COMMAND, GRADLE_BUILD_COMMAND);
         content = replaceRequired(content, ORIGINAL_JACOCO_DIR, GRADLE_JACOCO_DIR, file);
         content = replaceRequired(content, ORIGINAL_COVERAGE_GUARD, GRADLE_COVERAGE_GUARD, file);
         content = replaceRequired(content, ORIGINAL_BUILD_COMMAND, GRADLE_BUILD_COMMAND, file);

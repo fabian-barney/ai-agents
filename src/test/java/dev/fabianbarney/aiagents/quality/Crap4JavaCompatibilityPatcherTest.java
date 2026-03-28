@@ -68,7 +68,7 @@ class Crap4JavaCompatibilityPatcherTest {
         assertTrue(Files.readString(sourceRoot.resolve("CoverageRunner.java"))
             .contains("\"jacocoTestReport\""));
         assertTrue(Files.readString(sourceRoot.resolve("CoverageRunner.java"))
-            .contains("startsWith(\"windows\") ? \"gradlew.bat\" : \"./gradlew\""));
+            .contains("toLowerCase(java.util.Locale.ROOT).startsWith(\"windows\") ? \"gradlew.bat\" : \"./gradlew\""));
         assertFalse(Files.readString(sourceRoot.resolve("CoverageRunner.java"))
             .contains("jacoco-maven-plugin:0.8.12:prepare-agent"));
         assertFalse(Files.readString(sourceRoot.resolve("CoverageRunner.java"))
@@ -89,13 +89,22 @@ class Crap4JavaCompatibilityPatcherTest {
         Crap4JavaCompatibilityPatcher.applyCompatibilityPatches(tempDir);
 
         Path coverageRunner = sourceRoot.resolve("CoverageRunner.java");
-        String legacyInjected = Files.readString(coverageRunner).replace("startsWith(\"windows\")", "contains(\"win\")");
-        Files.writeString(coverageRunner, legacyInjected);
-
+        String previousInjected = Files.readString(coverageRunner)
+            .replace("toLowerCase(java.util.Locale.ROOT).startsWith(\"windows\")", "toLowerCase().startsWith(\"windows\")");
+        Files.writeString(coverageRunner, previousInjected);
         Crap4JavaCompatibilityPatcher.applyCompatibilityPatches(tempDir);
 
-        assertTrue(Files.readString(coverageRunner).contains("startsWith(\"windows\") ? \"gradlew.bat\" : \"./gradlew\""));
-        assertFalse(Files.readString(coverageRunner).contains("contains(\"win\") ? \"gradlew.bat\" : \"./gradlew\""));
+        String legacyInjected = Files.readString(coverageRunner)
+            .replace("toLowerCase(java.util.Locale.ROOT).startsWith(\"windows\")", "toLowerCase().contains(\"win\")");
+        Files.writeString(coverageRunner, legacyInjected);
+        Crap4JavaCompatibilityPatcher.applyCompatibilityPatches(tempDir);
+
+        assertTrue(Files.readString(coverageRunner)
+            .contains("toLowerCase(java.util.Locale.ROOT).startsWith(\"windows\") ? \"gradlew.bat\" : \"./gradlew\""));
+        assertFalse(Files.readString(coverageRunner)
+            .contains("toLowerCase().startsWith(\"windows\") ? \"gradlew.bat\" : \"./gradlew\""));
+        assertFalse(Files.readString(coverageRunner)
+            .contains("toLowerCase().contains(\"win\") ? \"gradlew.bat\" : \"./gradlew\""));
     }
 
     private void writeSampleSources(Path sourceRoot) throws IOException {

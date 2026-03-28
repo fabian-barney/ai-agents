@@ -57,9 +57,8 @@ final class Crap4JavaGateRunner {
             return false;
         }
 
-        String currentCommit = readCommandOutput(
-            List.of("git", "-C", workDirectory.toString(), "rev-parse", "HEAD"),
-            null
+        String currentCommit = readCommandOutputIfAvailable(
+            List.of("git", "-C", workDirectory.toString(), "rev-parse", "HEAD")
         );
         return CRAP4JAVA_COMMIT.equals(currentCommit);
     }
@@ -138,7 +137,15 @@ final class Crap4JavaGateRunner {
         }
     }
 
-    private String readCommandOutput(List<String> command, Path directory) throws Exception {
+    private String readCommandOutputIfAvailable(List<String> command) throws InterruptedException {
+        try {
+            return readCommandOutput(command, null);
+        } catch (IOException | IllegalStateException exception) {
+            return "";
+        }
+    }
+
+    private String readCommandOutput(List<String> command, Path directory) throws IOException, InterruptedException {
         Path outputFile = Files.createTempFile("crap4java-gate-", ".log");
         try {
             Process process = startCommand(command, directory, outputFile);
