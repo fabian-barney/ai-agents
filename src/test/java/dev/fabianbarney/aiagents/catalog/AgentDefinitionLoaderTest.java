@@ -8,9 +8,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -129,7 +129,11 @@ class AgentDefinitionLoaderTest {
     }
 
     private void assertMessageContains(IllegalArgumentException exception, String expectedFragment) {
-        String message = Objects.requireNonNull(exception.getMessage());
+        String message = exception.getMessage();
+        assertNotNull(message);
+        if (message == null) {
+            return;
+        }
         assertTrue(message.contains(expectedFragment));
     }
 }

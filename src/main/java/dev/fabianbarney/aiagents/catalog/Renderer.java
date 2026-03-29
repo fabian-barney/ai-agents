@@ -1,11 +1,12 @@
 package dev.fabianbarney.aiagents.catalog;
 
+import org.jspecify.annotations.Nullable;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
-import org.jspecify.annotations.Nullable;
 
 interface Renderer {
     void renderAll(List<AgentDefinition> agents, Path outputRoot) throws IOException;

@@ -12,11 +12,11 @@ import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -215,7 +215,11 @@ class RendererIntegrationTest {
     }
 
     private void assertMessageContains(IllegalArgumentException exception, String expectedFragment) {
-        String message = Objects.requireNonNull(exception.getMessage());
+        String message = exception.getMessage();
+        assertNotNull(message);
+        if (message == null) {
+            return;
+        }
         assertTrue(message.contains(expectedFragment));
     }
 }
