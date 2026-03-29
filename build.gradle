@@ -1,7 +1,7 @@
 plugins {
     id 'java'
     id 'jacoco'
-    id 'media.barney.crap4java' version '0.1.2'
+    id 'media.barney.crap-java' version '0.2.0'
     id 'org.springframework.boot' version '3.5.13'
 }
 
@@ -75,7 +75,7 @@ tasks.named('jacocoTestReport') {
 tasks.register('qualityGate') {
     group = 'verification'
     description = 'Run the repository quality gate tasks.'
-    dependsOn(tasks.named('check'), tasks.named('crap4javaCheck'))
+    dependsOn(tasks.named('check'), tasks.named('crap-java-check'))
 }
 
 tasks.named('check') {

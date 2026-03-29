@@ -51,17 +51,17 @@ Use the Gradle wrapper:
 
 ```bash
 ./gradlew check
-./gradlew crap4javaCheck
+./gradlew crap-java-check
 ./gradlew qualityGate
 ./gradlew renderAgents
 ```
 
-`./gradlew crap4javaCheck` runs the shared `media.barney.crap4java` `0.1.2`
+`./gradlew crap-java-check` runs the shared `media.barney.crap-java` `0.2.0`
 gate against the repository's production Java sources. `./gradlew qualityGate`
 is the repo-local convenience entrypoint that runs `check` plus
-`crap4javaCheck`.
+`crap-java-check`.
 
-Gradle resolves the shared `crap4java` plugin from GitHub Packages. Configure
+Gradle resolves the shared `crap-java` plugin from GitHub Packages. Configure
 either:
 
 - `gpr.user` and `gpr.key` in `~/.gradle/gradle.properties`
@@ -69,7 +69,7 @@ either:
 - `GITHUB_ACTOR` with `GH_TOKEN`
 
 For local development, the build also checks `mavenLocal()` first so a freshly
-published local copy of `media.barney.crap4java` is picked up before GitHub
+published local copy of `media.barney.crap-java` is picked up before GitHub
 Packages.
 
 Renderer output artifacts from `./gradlew renderAgents` are written under `build/rendered/`:
