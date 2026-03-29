@@ -34,8 +34,8 @@ jobs:
       - name: Run Gradle check
         run: ./gradlew check
 
-  crap4java-gate:
-    name: Crap4Java Gate
+  crap-java-gate:
+    name: crap-java Gate
     runs-on: ubuntu-latest
     env:
       GITHUB_ACTOR: ${{ github.actor }}
@@ -55,5 +55,5 @@ jobs:
       - name: Ensure Gradle wrapper is executable
         run: chmod +x ./gradlew
 
-      - name: Run crap4java gate
-        run: ./gradlew crap4javaCheck
+      - name: Run crap-java gate
+        run: ./gradlew crap-java-check

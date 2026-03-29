@@ -10,11 +10,19 @@ pluginManagement {
         ?: nonBlankValue(providers.environmentVariable('GITHUB_TOKEN').orNull)
         ?: nonBlankValue(providers.environmentVariable('GH_TOKEN').orNull)
 
+    resolutionStrategy {
+        eachPlugin {
+            if (requested.id.id == 'media.barney.crap-java') {
+                useModule("media.barney:crap-java-gradle-plugin:${requested.version}")
+            }
+        }
+    }
+
     repositories {
         mavenLocal()
         if (githubPackagesToken != null) {
             maven {
-                url = uri('https://maven.pkg.github.com/fabian-barney/crap4java')
+                url = uri('https://maven.pkg.github.com/fabian-barney/crap-java')
                 credentials {
                     username = githubPackagesUser
                     password = githubPackagesToken
