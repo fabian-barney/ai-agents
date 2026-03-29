@@ -56,7 +56,7 @@ Use the Gradle wrapper:
 ./gradlew renderAgents
 ```
 
-`./gradlew crap4javaCheck` runs the shared `media.barney.crap4java` `0.1.1`
+`./gradlew crap4javaCheck` runs the shared `media.barney.crap4java` `0.1.2`
 gate against the repository's production Java sources. `./gradlew qualityGate`
 is the repo-local convenience entrypoint that runs `check` plus
 `crap4javaCheck`.
