@@ -1,7 +1,7 @@
 plugins {
     id 'java'
     id 'jacoco'
-    id 'media.barney.crap4java' version '0.1.1'
+    id 'media.barney.crap4java' version '0.1.2'
     id 'org.springframework.boot' version '3.5.13'
 }
 
