@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
@@ -40,7 +41,7 @@ public final class AgentCatalogService {
         Files.createDirectories(outputDirectory);
     }
 
-    private void validateOutputDirectory(Path outputDirectory) {
+    private void validateOutputDirectory(Path outputDirectory) throws IOException {
         Path projectDirectory = projectDirectory();
         Path allowedOutputRoot = allowedOutputRoot();
         Path root = outputDirectory.getRoot();
@@ -62,6 +63,50 @@ public final class AgentCatalogService {
                 "Catalog output directory must be located under %s but was %s"
                     .formatted(allowedOutputRoot, outputDirectory)
             );
+        }
+
+        Path realProjectDirectory = projectDirectory.toRealPath();
+        validateExistingPathChain(
+            projectDirectory,
+            realProjectDirectory,
+            allowedOutputRoot,
+            "Catalog output root must not traverse symbolic links outside %s: %s resolved to %s"
+        );
+
+        Files.createDirectories(allowedOutputRoot);
+        Path realAllowedOutputRoot = allowedOutputRoot.toRealPath();
+
+        validateExistingPathChain(
+            allowedOutputRoot,
+            realAllowedOutputRoot,
+            outputDirectory,
+            "Catalog output directory must not traverse symbolic links outside %s: %s resolved to %s"
+        );
+    }
+
+    private void validateExistingPathChain(
+        Path basePath,
+        Path realBasePath,
+        Path targetPath,
+        String errorMessage
+    ) throws IOException {
+        Path currentPath = basePath;
+        Path expectedRealPath = realBasePath;
+
+        for (Path segment : basePath.relativize(targetPath)) {
+            currentPath = currentPath.resolve(segment);
+            expectedRealPath = expectedRealPath.resolve(segment);
+
+            if (!Files.exists(currentPath, LinkOption.NOFOLLOW_LINKS)) {
+                break;
+            }
+
+            Path actualRealPath = currentPath.toRealPath();
+            if (!actualRealPath.equals(expectedRealPath)) {
+                throw new IllegalArgumentException(
+                    errorMessage.formatted(basePath, currentPath, actualRealPath)
+                );
+            }
         }
     }
 

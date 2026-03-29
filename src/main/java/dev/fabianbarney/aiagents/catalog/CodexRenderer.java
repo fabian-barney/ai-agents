@@ -32,23 +32,23 @@ final class CodexRenderer extends BaseRenderer {
         RendererProperties.Codex properties = rendererProperties.getCodex();
         CodexOverrides overrides = agent.platformOverrides().codex();
         StringBuilder builder = new StringBuilder();
-        builder.append(properties.getNameKey()).append(" = ").append(quoted(agent.name())).append(System.lineSeparator());
+        builder.append(properties.getNameKey()).append(" = ").append(tomlBasicString(agent.name())).append(System.lineSeparator());
         builder.append(properties.getDescriptionKey()).append(" = ")
-            .append(quoted(description(agent, overrides)))
+            .append(tomlBasicString(description(agent, overrides)))
             .append(System.lineSeparator());
         builder.append(properties.getModelKey()).append(" = ")
-            .append(quoted(selectedModel(agent, overrides.model()).value()))
+            .append(tomlBasicString(selectedModel(agent, overrides.model()).value()))
             .append(System.lineSeparator());
 
         String reasoningEffort = selectedReasoningEffort(agent, overrides.modelReasoningEffort());
         if (reasoningEffort != null) {
             builder.append(properties.getModelReasoningEffortKey()).append(" = ")
-                .append(quoted(reasoningEffort))
+                .append(tomlBasicString(reasoningEffort))
                 .append(System.lineSeparator());
         }
         if (overrides.sandboxMode() != null && !overrides.sandboxMode().isBlank()) {
             builder.append(properties.getSandboxModeKey()).append(" = ")
-                .append(quoted(overrides.sandboxMode()))
+                .append(tomlBasicString(overrides.sandboxMode()))
                 .append(System.lineSeparator());
         }
         if (!overrides.mcpServers().isEmpty()) {
@@ -65,7 +65,7 @@ final class CodexRenderer extends BaseRenderer {
         }
 
         builder.append(properties.getDeveloperInstructionsKey()).append(" = ")
-            .append(tomlLiteralBlock(agent.prompt()))
+            .append(tomlBasicString(agent.prompt()))
             .append(System.lineSeparator());
         return builder.toString();
     }
@@ -77,6 +77,6 @@ final class CodexRenderer extends BaseRenderer {
     }
 
     private String renderTomlArray(java.util.List<String> values) {
-        return values.stream().map(this::quoted).collect(java.util.stream.Collectors.joining(", "));
+        return values.stream().map(this::tomlBasicString).collect(java.util.stream.Collectors.joining(", "));
     }
 }

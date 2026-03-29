@@ -3,7 +3,9 @@ package dev.fabianbarney.aiagents.catalog;
 import jakarta.validation.Validation;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.opentest4j.TestAbortedException;
 
+import java.nio.file.FileSystemException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,6 +15,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -53,7 +56,8 @@ class RendererIntegrationTest {
         assertTrue(rendered.contains("model = \"gpt-5.4\""));
         assertTrue(rendered.contains("model_reasoning_effort = \"medium\""));
         assertTrue(rendered.contains("sandbox_mode = \"workspace-write\""));
-        assertTrue(rendered.contains("developer_instructions = '''"));
+        assertTrue(rendered.contains("developer_instructions = \"You are the implementation specialist.\\n"));
+        assertFalse(rendered.contains("developer_instructions = '''"));
     }
 
     @Test
@@ -109,6 +113,44 @@ class RendererIntegrationTest {
         assertTrue(exception.getMessage().contains("Catalog output directory must be located under"));
     }
 
+    @Test
+    void rejectsRendererPathsThatEscapeThePreparedOutputRoot(@TempDir Path tempDir) throws IOException {
+        writeAgent(tempDir, "escape.yaml", agentDefinition("../../../../outside", "Prompt"));
+
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> service.renderCatalog(tempDir, generatedOutputDirectory())
+        );
+
+        assertTrue(exception.getMessage().contains("Renderer output path must stay under"));
+    }
+
+    @Test
+    void rejectsAbsoluteRendererOutputSubpaths() throws IOException {
+        rendererProperties.getCodex().setOutputDirectory(Path.of(System.getProperty("java.io.tmpdir")).toAbsolutePath());
+
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> service.renderCatalog(projectPath("agents"), generatedOutputDirectory())
+        );
+
+        assertTrue(exception.getMessage().contains("Renderer output path must be relative"));
+    }
+
+    @Test
+    void rejectsSymlinkedOutputDirectoriesThatEscapeTheAllowedRoot(@TempDir Path tempDir) throws IOException {
+        Path symlinkParent = Files.createTempDirectory(testOutputRoot(), "renderer-symlink-");
+        Path externalTarget = Files.createDirectories(tempDir.resolve("external-target"));
+        Path symlink = createDirectorySymlinkOrSkip(symlinkParent.resolve("outside-link"), externalTarget);
+
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> service.renderCatalog(projectPath("agents"), symlink.resolve("nested"))
+        );
+
+        assertTrue(exception.getMessage().contains("must not traverse symbolic links"));
+    }
+
     private Map<String, String> readRenderedFiles(Path rootDirectory) throws IOException {
         try (var paths = Files.walk(rootDirectory)) {
             return paths.filter(Files::isRegularFile)
@@ -135,8 +177,39 @@ class RendererIntegrationTest {
     }
 
     private Path generatedOutputDirectory() throws IOException {
+        return Files.createTempDirectory(testOutputRoot(), "renderer-");
+    }
+
+    private Path testOutputRoot() throws IOException {
         Path testOutputRoot = projectPath(Path.of("build", "rendered", "test").toString());
         Files.createDirectories(testOutputRoot);
-        return Files.createTempDirectory(testOutputRoot, "renderer-");
+        return testOutputRoot;
+    }
+
+    private Path createDirectorySymlinkOrSkip(Path link, Path target) throws IOException {
+        try {
+            return Files.createSymbolicLink(link, target);
+        } catch (UnsupportedOperationException | SecurityException exception) {
+            throw new TestAbortedException("Symbolic links are unavailable in this environment", exception);
+        } catch (FileSystemException exception) {
+            throw new TestAbortedException("Symbolic links are unavailable in this environment", exception);
+        }
+    }
+
+    private void writeAgent(Path directory, String fileName, String content) throws IOException {
+        Files.writeString(directory.resolve(fileName), content.stripIndent());
+    }
+
+    private String agentDefinition(String id, String prompt) {
+        return """
+            id: %s
+            name: Test Agent
+            purpose: Test rendering
+            whenToUse:
+              - testing
+            boundaries:
+              - stay focused
+            prompt: %s
+            """.formatted(id, prompt);
     }
 }
