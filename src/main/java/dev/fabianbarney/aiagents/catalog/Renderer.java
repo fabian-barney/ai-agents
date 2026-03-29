@@ -54,7 +54,7 @@ abstract class BaseRenderer implements Renderer {
             return null;
         }
 
-        String reasoningEffort = preferredModel.reasoningEffort();
+        @Nullable String reasoningEffort = preferredModel.reasoningEffort();
         return reasoningEffort == null || reasoningEffort.isBlank() ? null : reasoningEffort;
     }
 

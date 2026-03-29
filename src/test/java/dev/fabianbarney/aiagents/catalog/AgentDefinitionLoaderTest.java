@@ -3,6 +3,7 @@ package dev.fabianbarney.aiagents.catalog;
 import jakarta.validation.Validation;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -129,7 +130,7 @@ class AgentDefinitionLoaderTest {
     }
 
     private void assertMessageContains(IllegalArgumentException exception, String expectedFragment) {
-        String message = exception.getMessage();
+        @Nullable String message = exception.getMessage();
         assertNotNull(message);
         if (message == null) {
             return;
