@@ -1,19 +1,23 @@
 pluginManagement {
-    def githubPackagesUserProvider = providers.gradleProperty('gpr.user')
-        .orElse(providers.environmentVariable('GITHUB_ACTOR'))
-        .orElse('fabian-barney')
-    def githubPackagesTokenProvider = providers.gradleProperty('gpr.key')
-        .orElse(providers.environmentVariable('GITHUB_TOKEN'))
-        .orElse(providers.environmentVariable('GH_TOKEN'))
+    def nonBlankValue = { String value ->
+        def trimmed = value?.trim()
+        trimmed ? trimmed : null
+    }
+    def githubPackagesUser = nonBlankValue(providers.gradleProperty('gpr.user').orNull)
+        ?: nonBlankValue(providers.environmentVariable('GITHUB_ACTOR').orNull)
+        ?: 'fabian-barney'
+    def githubPackagesToken = nonBlankValue(providers.gradleProperty('gpr.key').orNull)
+        ?: nonBlankValue(providers.environmentVariable('GITHUB_TOKEN').orNull)
+        ?: nonBlankValue(providers.environmentVariable('GH_TOKEN').orNull)
 
     repositories {
         mavenLocal()
-        if (githubPackagesTokenProvider.isPresent()) {
+        if (githubPackagesToken != null) {
             maven {
                 url = uri('https://maven.pkg.github.com/fabian-barney/crap4java')
                 credentials {
-                    username = githubPackagesUserProvider.get()
-                    password = githubPackagesTokenProvider.get()
+                    username = githubPackagesUser
+                    password = githubPackagesToken
                 }
             }
         }
