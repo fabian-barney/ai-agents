@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
+import org.jspecify.annotations.Nullable;
 
 interface Renderer {
     void renderAll(List<AgentDefinition> agents, Path outputRoot) throws IOException;
@@ -29,7 +30,7 @@ abstract class BaseRenderer implements Renderer {
         }
     }
 
-    protected final ModelId selectedModel(AgentDefinition agent, ModelId overrideModel) {
+    protected final ModelId selectedModel(AgentDefinition agent, @Nullable ModelId overrideModel) {
         if (overrideModel != null && !overrideModel.isBlank()) {
             return overrideModel;
         }
@@ -39,15 +40,21 @@ abstract class BaseRenderer implements Renderer {
             .orElse(defaultModel());
     }
 
-    protected final String selectedReasoningEffort(AgentDefinition agent, String overrideReasoningEffort) {
+    protected final @Nullable String selectedReasoningEffort(
+        AgentDefinition agent,
+        @Nullable String overrideReasoningEffort
+    ) {
         if (overrideReasoningEffort != null && !overrideReasoningEffort.isBlank()) {
             return overrideReasoningEffort;
         }
 
-        return selectedPreferredModel(agent)
-            .map(PreferredModel::reasoningEffort)
-            .filter(value -> value != null && !value.isBlank())
-            .orElse(null);
+        PreferredModel preferredModel = selectedPreferredModel(agent).orElse(null);
+        if (preferredModel == null) {
+            return null;
+        }
+
+        String reasoningEffort = preferredModel.reasoningEffort();
+        return reasoningEffort == null || reasoningEffort.isBlank() ? null : reasoningEffort;
     }
 
     private Optional<PreferredModel> selectedPreferredModel(AgentDefinition agent) {

@@ -1,6 +1,7 @@
 package dev.fabianbarney.aiagents.catalog;
 
 import jakarta.validation.Valid;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
@@ -16,15 +17,15 @@ public record PlatformOverrides(
     }
 
     public static PlatformOverrides empty() {
-        return new PlatformOverrides(null, null, null);
+        return new PlatformOverrides(CodexOverrides.empty(), ClaudeOverrides.empty(), CopilotOverrides.empty());
     }
 }
 
 record CodexOverrides(
-    String description,
-    @Valid ModelId model,
-    String modelReasoningEffort,
-    String sandboxMode,
+    @Nullable String description,
+    @Valid @Nullable ModelId model,
+    @Nullable String modelReasoningEffort,
+    @Nullable String sandboxMode,
     List<String> mcpServers,
     List<String> nicknameCandidates
 ) {
@@ -34,12 +35,12 @@ record CodexOverrides(
     }
 
     static CodexOverrides empty() {
-        return new CodexOverrides(null, null, null, null, null, null);
+        return new CodexOverrides(null, null, null, null, List.of(), List.of());
     }
 }
 
 record ClaudeOverrides(
-    String description,
+    @Nullable String description,
     List<String> tools
 ) {
     ClaudeOverrides {
@@ -47,16 +48,16 @@ record ClaudeOverrides(
     }
 
     static ClaudeOverrides empty() {
-        return new ClaudeOverrides(null, null);
+        return new ClaudeOverrides(null, List.of());
     }
 }
 
 record CopilotOverrides(
-    String description,
-    @Valid ModelId model,
+    @Nullable String description,
+    @Valid @Nullable ModelId model,
     List<String> tools,
     List<String> mcpServers,
-    String target
+    @Nullable String target
 ) {
     CopilotOverrides {
         tools = tools == null ? List.of() : List.copyOf(tools);
@@ -64,6 +65,6 @@ record CopilotOverrides(
     }
 
     static CopilotOverrides empty() {
-        return new CopilotOverrides(null, null, null, null, null);
+        return new CopilotOverrides(null, null, List.of(), List.of(), null);
     }
 }

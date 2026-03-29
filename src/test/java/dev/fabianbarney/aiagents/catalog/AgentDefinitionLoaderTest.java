@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -48,7 +49,7 @@ class AgentDefinitionLoaderTest {
         );
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> loader.load(tempDir));
-        assertTrue(exception.getMessage().contains("name must be non-blank"));
+        assertMessageContains(exception, "name must be non-blank");
     }
 
     @Test
@@ -68,7 +69,7 @@ class AgentDefinitionLoaderTest {
         writeAgent(tempDir, "second.yaml", definition);
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> loader.load(tempDir));
-        assertTrue(exception.getMessage().contains("Duplicate agent id 'duplicate'"));
+        assertMessageContains(exception, "Duplicate agent id 'duplicate'");
     }
 
     @Test
@@ -91,7 +92,7 @@ class AgentDefinitionLoaderTest {
         );
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> loader.load(tempDir));
-        assertTrue(exception.getMessage().contains("preferredModels must be omitted or contain at least one entry"));
+        assertMessageContains(exception, "preferredModels must be omitted or contain at least one entry");
     }
 
     @Test
@@ -116,7 +117,7 @@ class AgentDefinitionLoaderTest {
         );
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> loader.load(tempDir));
-        assertTrue(exception.getMessage().contains("preferredModels.model must be non-blank"));
+        assertMessageContains(exception, "preferredModels.model must be non-blank");
     }
 
     private void writeAgent(Path directory, String fileName, String content) throws IOException {
@@ -125,5 +126,10 @@ class AgentDefinitionLoaderTest {
 
     private Path projectPath(String relativePath) {
         return Path.of(System.getProperty("user.dir"), relativePath).toAbsolutePath().normalize();
+    }
+
+    private void assertMessageContains(IllegalArgumentException exception, String expectedFragment) {
+        String message = Objects.requireNonNull(exception.getMessage());
+        assertTrue(message.contains(expectedFragment));
     }
 }

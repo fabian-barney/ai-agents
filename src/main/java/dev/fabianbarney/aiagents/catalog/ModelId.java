@@ -9,6 +9,7 @@ public record ModelId(
 ) {
     @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
     public ModelId {
+        value = value == null ? "" : value;
     }
 
     @JsonValue
@@ -17,7 +18,7 @@ public record ModelId(
     }
 
     public boolean isBlank() {
-        return value == null || value.isBlank();
+        return value.isBlank();
     }
 
     @Override
