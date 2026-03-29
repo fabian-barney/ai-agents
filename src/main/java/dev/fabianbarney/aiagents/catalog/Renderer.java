@@ -49,7 +49,7 @@ abstract class BaseRenderer implements Renderer {
             return overrideReasoningEffort;
         }
 
-        PreferredModel preferredModel = selectedPreferredModel(agent).orElse(null);
+        @Nullable PreferredModel preferredModel = selectedPreferredModel(agent).orElse(null);
         if (preferredModel == null) {
             return null;
         }

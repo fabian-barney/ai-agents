@@ -4,7 +4,6 @@ import jakarta.validation.Validation;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.opentest4j.TestAbortedException;
-import org.jspecify.annotations.Nullable;
 
 import java.nio.file.FileSystemException;
 import java.io.IOException;
@@ -15,9 +14,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static dev.fabianbarney.aiagents.catalog.TestAssertions.assertMessageContains;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -213,14 +212,5 @@ class RendererIntegrationTest {
               - stay focused
             prompt: %s
             """.formatted(id, prompt);
-    }
-
-    private void assertMessageContains(IllegalArgumentException exception, String expectedFragment) {
-        @Nullable String message = exception.getMessage();
-        assertNotNull(message);
-        if (message == null) {
-            return;
-        }
-        assertTrue(message.contains(expectedFragment));
     }
 }

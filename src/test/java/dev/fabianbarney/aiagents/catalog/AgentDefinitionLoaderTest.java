@@ -3,7 +3,6 @@ package dev.fabianbarney.aiagents.catalog;
 import jakarta.validation.Validation;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -11,9 +10,8 @@ import java.nio.file.Path;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static dev.fabianbarney.aiagents.catalog.TestAssertions.assertMessageContains;
 
 class AgentDefinitionLoaderTest {
 
@@ -127,14 +125,5 @@ class AgentDefinitionLoaderTest {
 
     private Path projectPath(String relativePath) {
         return Path.of(System.getProperty("user.dir"), relativePath).toAbsolutePath().normalize();
-    }
-
-    private void assertMessageContains(IllegalArgumentException exception, String expectedFragment) {
-        @Nullable String message = exception.getMessage();
-        assertNotNull(message);
-        if (message == null) {
-            return;
-        }
-        assertTrue(message.contains(expectedFragment));
     }
 }
