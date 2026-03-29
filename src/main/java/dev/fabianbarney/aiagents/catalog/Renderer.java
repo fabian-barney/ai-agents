@@ -1,6 +1,7 @@
 package dev.fabianbarney.aiagents.catalog;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
@@ -21,8 +22,9 @@ abstract class BaseRenderer implements Renderer {
 
     @Override
     public final void renderAll(List<AgentDefinition> agents, Path outputRoot) throws IOException {
+        Path normalizedOutputRoot = outputRoot.toAbsolutePath().normalize();
         for (AgentDefinition agent : agents) {
-            Path outputPath = outputRoot.resolve(relativePath(agent));
+            Path outputPath = resolveOutputPath(normalizedOutputRoot, relativePath(agent));
             writeFile(outputPath, renderContent(agent));
         }
     }
@@ -54,12 +56,31 @@ abstract class BaseRenderer implements Renderer {
             .findFirst();
     }
 
+    private Path resolveOutputPath(Path outputRoot, Path rendererRelativePath) {
+        if (rendererRelativePath.isAbsolute()) {
+            throw new IllegalArgumentException(
+                "Renderer output path must be relative to %s but was %s"
+                    .formatted(outputRoot, rendererRelativePath)
+            );
+        }
+
+        Path resolvedOutputPath = outputRoot.resolve(rendererRelativePath).normalize();
+        if (!resolvedOutputPath.startsWith(outputRoot)) {
+            throw new IllegalArgumentException(
+                "Renderer output path must stay under %s but was %s"
+                    .formatted(outputRoot, rendererRelativePath)
+            );
+        }
+
+        return resolvedOutputPath;
+    }
+
     protected final void writeFile(Path outputPath, String content) throws IOException {
         Path parentDirectory = outputPath.getParent();
         if (parentDirectory != null) {
-            java.nio.file.Files.createDirectories(parentDirectory);
+            Files.createDirectories(parentDirectory);
         }
-        java.nio.file.Files.writeString(outputPath, content);
+        Files.writeString(outputPath, content);
     }
 
     protected final String quoted(String value) {
@@ -70,8 +91,28 @@ abstract class BaseRenderer implements Renderer {
         return quoted(value);
     }
 
-    protected final String tomlLiteralBlock(String value) {
-        return "'''\n%s\n'''".formatted(value.stripTrailing());
+    protected final String tomlBasicString(String value) {
+        StringBuilder builder = new StringBuilder("\"");
+        for (char character : value.stripTrailing().toCharArray()) {
+            switch (character) {
+                case '\\' -> builder.append("\\\\");
+                case '"' -> builder.append("\\\"");
+                case '\b' -> builder.append("\\b");
+                case '\t' -> builder.append("\\t");
+                case '\n' -> builder.append("\\n");
+                case '\f' -> builder.append("\\f");
+                case '\r' -> builder.append("\\r");
+                default -> {
+                    if (Character.isISOControl(character)) {
+                        builder.append("\\u%04X".formatted((int) character));
+                    } else {
+                        builder.append(character);
+                    }
+                }
+            }
+        }
+        builder.append('"');
+        return builder.toString();
     }
 
     protected final String markdownBody(String prompt) {
