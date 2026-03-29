@@ -1,5 +1,7 @@
 package dev.fabianbarney.aiagents.catalog;
 
+import org.jspecify.annotations.Nullable;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -29,7 +31,7 @@ abstract class BaseRenderer implements Renderer {
         }
     }
 
-    protected final ModelId selectedModel(AgentDefinition agent, ModelId overrideModel) {
+    protected final ModelId selectedModel(AgentDefinition agent, @Nullable ModelId overrideModel) {
         if (overrideModel != null && !overrideModel.isBlank()) {
             return overrideModel;
         }
@@ -39,15 +41,21 @@ abstract class BaseRenderer implements Renderer {
             .orElse(defaultModel());
     }
 
-    protected final String selectedReasoningEffort(AgentDefinition agent, String overrideReasoningEffort) {
+    protected final @Nullable String selectedReasoningEffort(
+        AgentDefinition agent,
+        @Nullable String overrideReasoningEffort
+    ) {
         if (overrideReasoningEffort != null && !overrideReasoningEffort.isBlank()) {
             return overrideReasoningEffort;
         }
 
-        return selectedPreferredModel(agent)
-            .map(PreferredModel::reasoningEffort)
-            .filter(value -> value != null && !value.isBlank())
-            .orElse(null);
+        @Nullable PreferredModel preferredModel = selectedPreferredModel(agent).orElse(null);
+        if (preferredModel == null) {
+            return null;
+        }
+
+        @Nullable String reasoningEffort = preferredModel.reasoningEffort();
+        return reasoningEffort == null || reasoningEffort.isBlank() ? null : reasoningEffort;
     }
 
     private Optional<PreferredModel> selectedPreferredModel(AgentDefinition agent) {

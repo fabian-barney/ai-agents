@@ -9,6 +9,7 @@ public record ProviderId(
 ) {
     @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
     public ProviderId {
+        value = value == null ? "" : value;
     }
 
     @JsonValue

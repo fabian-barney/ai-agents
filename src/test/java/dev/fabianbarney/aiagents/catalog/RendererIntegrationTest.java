@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static dev.fabianbarney.aiagents.catalog.TestAssertions.assertMessageContains;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -110,7 +111,7 @@ class RendererIntegrationTest {
             () -> service.renderCatalog(projectPath("agents"), tempDir.resolve("unsafe-output"))
         );
 
-        assertTrue(exception.getMessage().contains("Catalog output directory must be located under"));
+        assertMessageContains(exception, "Catalog output directory must be located under");
     }
 
     @Test
@@ -122,7 +123,7 @@ class RendererIntegrationTest {
             () -> service.renderCatalog(tempDir, generatedOutputDirectory())
         );
 
-        assertTrue(exception.getMessage().contains("Renderer output path must stay under"));
+        assertMessageContains(exception, "Renderer output path must stay under");
     }
 
     @Test
@@ -134,7 +135,7 @@ class RendererIntegrationTest {
             () -> service.renderCatalog(projectPath("agents"), generatedOutputDirectory())
         );
 
-        assertTrue(exception.getMessage().contains("Renderer output path must be relative"));
+        assertMessageContains(exception, "Renderer output path must be relative");
     }
 
     @Test
@@ -148,7 +149,7 @@ class RendererIntegrationTest {
             () -> service.renderCatalog(projectPath("agents"), symlink.resolve("nested"))
         );
 
-        assertTrue(exception.getMessage().contains("must not traverse symbolic links"));
+        assertMessageContains(exception, "must not traverse symbolic links");
     }
 
     private Map<String, String> readRenderedFiles(Path rootDirectory) throws IOException {

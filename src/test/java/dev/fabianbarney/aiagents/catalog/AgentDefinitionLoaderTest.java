@@ -11,7 +11,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static dev.fabianbarney.aiagents.catalog.TestAssertions.assertMessageContains;
 
 class AgentDefinitionLoaderTest {
 
@@ -48,7 +48,7 @@ class AgentDefinitionLoaderTest {
         );
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> loader.load(tempDir));
-        assertTrue(exception.getMessage().contains("name must be non-blank"));
+        assertMessageContains(exception, "name must be non-blank");
     }
 
     @Test
@@ -68,7 +68,7 @@ class AgentDefinitionLoaderTest {
         writeAgent(tempDir, "second.yaml", definition);
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> loader.load(tempDir));
-        assertTrue(exception.getMessage().contains("Duplicate agent id 'duplicate'"));
+        assertMessageContains(exception, "Duplicate agent id 'duplicate'");
     }
 
     @Test
@@ -91,7 +91,7 @@ class AgentDefinitionLoaderTest {
         );
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> loader.load(tempDir));
-        assertTrue(exception.getMessage().contains("preferredModels must be omitted or contain at least one entry"));
+        assertMessageContains(exception, "preferredModels must be omitted or contain at least one entry");
     }
 
     @Test
@@ -116,7 +116,7 @@ class AgentDefinitionLoaderTest {
         );
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> loader.load(tempDir));
-        assertTrue(exception.getMessage().contains("preferredModels.model must be non-blank"));
+        assertMessageContains(exception, "preferredModels.model must be non-blank");
     }
 
     private void writeAgent(Path directory, String fileName, String content) throws IOException {
