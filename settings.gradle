@@ -1,36 +1,7 @@
 pluginManagement {
-    def nonBlankValue = { String value ->
-        def trimmed = value?.trim()
-        trimmed ? trimmed : null
-    }
-    def githubPackagesUser = nonBlankValue(providers.gradleProperty('gpr.user').orNull)
-        ?: nonBlankValue(providers.environmentVariable('GITHUB_ACTOR').orNull)
-        ?: 'fabian-barney'
-    def githubPackagesToken = nonBlankValue(providers.gradleProperty('gpr.key').orNull)
-        ?: nonBlankValue(providers.environmentVariable('GITHUB_TOKEN').orNull)
-        ?: nonBlankValue(providers.environmentVariable('GH_TOKEN').orNull)
-
-    resolutionStrategy {
-        eachPlugin {
-            if (requested.id.id == 'media.barney.crap-java') {
-                useModule("media.barney:crap-java-gradle-plugin:${requested.version}")
-            }
-        }
-    }
-
     repositories {
-        mavenLocal()
-        if (githubPackagesToken != null) {
-            maven {
-                url = uri('https://maven.pkg.github.com/fabian-barney/crap-java')
-                credentials {
-                    username = githubPackagesUser
-                    password = githubPackagesToken
-                }
-            }
-        }
-        gradlePluginPortal()
         mavenCentral()
+        gradlePluginPortal()
     }
 }
 
