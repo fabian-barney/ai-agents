@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 interface Renderer {
@@ -13,6 +14,15 @@ interface Renderer {
 }
 
 abstract class BaseRenderer implements Renderer {
+    private static final Map<Character, String> TOML_ESCAPES = Map.of(
+        '\\', "\\\\",
+        '"', "\\\"",
+        '\b', "\\b",
+        '\t', "\\t",
+        '\n', "\\n",
+        '\f', "\\f",
+        '\r', "\\r"
+    );
 
     protected abstract ProviderId compatibleProvider();
 
@@ -102,25 +112,20 @@ abstract class BaseRenderer implements Renderer {
     protected final String tomlBasicString(String value) {
         StringBuilder builder = new StringBuilder("\"");
         for (char character : value.stripTrailing().toCharArray()) {
-            switch (character) {
-                case '\\' -> builder.append("\\\\");
-                case '"' -> builder.append("\\\"");
-                case '\b' -> builder.append("\\b");
-                case '\t' -> builder.append("\\t");
-                case '\n' -> builder.append("\\n");
-                case '\f' -> builder.append("\\f");
-                case '\r' -> builder.append("\\r");
-                default -> {
-                    if (Character.isISOControl(character)) {
-                        builder.append("\\u%04X".formatted((int) character));
-                    } else {
-                        builder.append(character);
-                    }
-                }
-            }
+            builder.append(escapedTomlCharacter(character));
         }
         builder.append('"');
         return builder.toString();
+    }
+
+    private String escapedTomlCharacter(char character) {
+        @Nullable String escaped = TOML_ESCAPES.get(character);
+        if (escaped != null) {
+            return escaped;
+        }
+        return Character.isISOControl(character)
+            ? "\\u%04X".formatted((int) character)
+            : Character.toString(character);
     }
 
     protected final String markdownBody(String prompt) {
