@@ -1,4 +1,4 @@
-package dev.fabianbarney.aiagents.catalog;
+package media.barney.ai.agent.catalog;
 
 import jakarta.validation.Valid;
 import org.jspecify.annotations.Nullable;

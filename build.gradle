@@ -6,7 +6,7 @@ plugins {
     id 'org.springframework.boot' version '3.5.13'
 }
 
-group = 'dev.fabianbarney.aiagents'
+group = 'media.barney'
 version = '0.1.0-SNAPSHOT'
 def lombokVersion = '1.18.44'
 def jacocoVersion = '0.8.13'
@@ -16,6 +16,10 @@ def nullawayVersion = '0.13.1'
 
 repositories {
     mavenCentral()
+}
+
+base {
+    archivesName = 'ai-agents'
 }
 
 java {
@@ -72,7 +76,7 @@ tasks.withType(JavaCompile).configureEach {
     ])
     options.errorprone {
         check('NullAway', net.ltgt.gradle.errorprone.CheckSeverity.ERROR)
-        option('NullAway:AnnotatedPackages', 'dev.fabianbarney.aiagents')
+        option('NullAway:AnnotatedPackages', 'media.barney.ai.agent')
     }
 }
 
@@ -82,7 +86,7 @@ tasks.register('renderAgents', JavaExec) {
     group = 'application'
     description = 'Render canonical agent definitions into target-specific artifacts.'
     classpath = sourceSets.main.runtimeClasspath
-    mainClass = 'dev.fabianbarney.aiagents.catalog.AgentCatalogApplication'
+    mainClass = 'media.barney.ai.agent.catalog.AgentCatalogApplication'
     args(
         "--catalog.input=${layout.projectDirectory.dir('agents').asFile.absolutePath}",
         "--catalog.output=${renderedOutputDir.get().asFile.absolutePath}"
