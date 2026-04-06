@@ -1,4 +1,4 @@
-package dev.fabianbarney.aiagents.catalog;
+package media.barney.ai.agent.catalog;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.ApplicationArguments;

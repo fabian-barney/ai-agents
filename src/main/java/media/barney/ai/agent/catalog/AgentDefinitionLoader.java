@@ -1,4 +1,4 @@
-package dev.fabianbarney.aiagents.catalog;
+package media.barney.ai.agent.catalog;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;

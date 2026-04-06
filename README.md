@@ -47,6 +47,8 @@ Provider ids and model ids are represented in code as typed value objects
 
 ## Build and Render
 
+The project coordinates are `media.barney:ai-agents`.
+
 Use the Gradle wrapper:
 
 ```bash
