@@ -28,7 +28,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Run Gradle check
-        run: ./gradlew check
+        run: ./gradlew check -x cognitive-java-check
 
   crap-java-gate:
     name: crap-java Gate
@@ -50,3 +50,24 @@ jobs:
 
       - name: Run crap-java gate
         run: ./gradlew crap-java-check
+
+  cognitive-java-gate:
+    name: cognitive-java Gate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: gradle
+
+      - name: Ensure Gradle wrapper is executable
+        run: chmod +x ./gradlew
+
+      - name: Run cognitive-java gate
+        run: ./gradlew cognitive-java-check

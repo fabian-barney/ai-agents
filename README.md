@@ -54,19 +54,22 @@ Use the Gradle wrapper:
 ```bash
 ./gradlew check
 ./gradlew crap-java-check
+./gradlew cognitive-java-check
 ./gradlew qualityGate
 ./gradlew renderAgents
 ```
 
 `./gradlew crap-java-check` runs the shared `media.barney.crap-java` `0.3.2`
-gate against the repository's production Java sources. `./gradlew qualityGate`
-is the repo-local convenience entrypoint that runs `check` plus
-`crap-java-check`.
+gate against the repository's production Java sources. `./gradlew cognitive-java-check`
+runs the shared `media.barney.cognitive-java` `0.3.0` gate. `./gradlew check`
+now includes the cognitive gate, and `./gradlew qualityGate` remains the
+repo-local convenience entrypoint that runs `check` plus the dedicated
+`crap-java-check` and `cognitive-java-check` tasks.
 
-Gradle resolves the shared `crap-java` plugin from published artifacts using
-`mavenCentral()` first and `gradlePluginPortal()` second. No committed
-custom package-host configuration, local `mavenLocal()` fallback, or extra
-credentials are required for the shared gate.
+Gradle resolves the shared `crap-java` and `cognitive-java` plugins from
+published artifacts using `mavenCentral()` first and `gradlePluginPortal()`
+second. No committed custom package-host configuration, local `mavenLocal()`
+fallback, or extra credentials are required for the shared gates.
 
 Renderer output artifacts from `./gradlew renderAgents` are written under `build/rendered/`:
 
