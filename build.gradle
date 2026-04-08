@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'jacoco'
     id 'media.barney.crap-java' version '0.3.2'
+    id 'media.barney.cognitive-java' version '0.3.0'
     id 'net.ltgt.errorprone' version '5.1.0'
     id 'org.springframework.boot' version '3.5.13'
 }
@@ -109,9 +110,9 @@ tasks.named('jacocoTestReport') {
 tasks.register('qualityGate') {
     group = 'verification'
     description = 'Run the repository quality gate tasks.'
-    dependsOn(tasks.named('check'), tasks.named('crap-java-check'))
+    dependsOn(tasks.named('check'), tasks.named('crap-java-check'), tasks.named('cognitive-java-check'))
 }
 
 tasks.named('check') {
-    dependsOn(tasks.named('renderAgents'))
+    dependsOn(tasks.named('renderAgents'), tasks.named('cognitive-java-check'))
 }
