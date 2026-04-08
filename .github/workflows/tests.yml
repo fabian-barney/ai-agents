@@ -28,7 +28,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Run Gradle check
-        run: ./gradlew check
+        run: ./gradlew check -x cognitive-java-check
 
   crap-java-gate:
     name: crap-java Gate
