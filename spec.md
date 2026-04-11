@@ -102,7 +102,7 @@ renderer scans the list from top to bottom and uses the first entry whose
 `provider` matches that renderer's compatible provider. If no compatible entry
 exists, the renderer falls back to its target-specific default model behavior.
 
-The loader rejects unknown top-level properties and duplicate agent ids.
+The loader rejects unknown properties and duplicate agent ids.
 
 ### `platformOverrides`
 
@@ -174,10 +174,10 @@ artifacts under the configured output root. Common behavior in v1:
 
 ### Codex
 
-Codex output is written under:
+Codex output is written under the configured `catalog.output` root at:
 
 ```text
-build/rendered/codex/.codex/agents/*.toml
+<catalog.output>/codex/.codex/agents/*.toml
 ```
 
 Current Codex defaults are:
@@ -217,10 +217,10 @@ Current configurable Codex properties are:
 
 ### Claude
 
-Claude output is written under:
+Claude output is written under the configured `catalog.output` root at:
 
 ```text
-build/rendered/claude/.claude/agents/*.md
+<catalog.output>/claude/.claude/agents/*.md
 ```
 
 Current Claude defaults are:
@@ -254,10 +254,10 @@ Current configurable Claude properties are:
 
 ### Copilot
 
-Copilot output is written under:
+Copilot output is written under the configured `catalog.output` root at:
 
 ```text
-build/rendered/copilot/.github/agents/*.agent.md
+<catalog.output>/copilot/.github/agents/*.agent.md
 ```
 
 Current Copilot defaults are:
