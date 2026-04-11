@@ -166,7 +166,8 @@ artifacts under the configured output root. Common behavior in v1:
 - renderer output subpaths must remain relative to the prepared output root
 - per-target output directories and emitted field names are configurable
   through `catalog.renderers.*`
-- generated artifacts embed the canonical prompt directly
+- generated artifacts use the canonical `prompt` as their source text, but
+  renderers may normalize trailing whitespace as part of target formatting
 - model selection uses a per-target override first, then the first compatible
   `preferredModels` entry, then the renderer default if the target emits a
   model
@@ -307,6 +308,7 @@ v1 guarantees and safeguards are:
 - renderer output paths must be relative and must stay under the prepared
   output root after normalization
 - repeated renders of the same canonical inputs produce deterministic output
+  within the same environment
 - Codex developer instructions are emitted as TOML basic strings with escaping
   for control characters and embedded quotes
 
