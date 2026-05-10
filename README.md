@@ -59,7 +59,7 @@ Use the Gradle wrapper:
 ./gradlew renderAgents
 ```
 
-`./gradlew crap-java-check` runs the shared `media.barney.crap-java` `0.3.2`
+`./gradlew crap-java-check` runs the shared `media.barney.crap-java` `0.5.0`
 gate against the repository's production Java sources. `./gradlew cognitive-java-check`
 runs the shared `media.barney.cognitive-java` `0.4.0` gate. `./gradlew check`
 now includes the cognitive gate, and `./gradlew qualityGate` remains the
