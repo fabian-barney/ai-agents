@@ -9,7 +9,7 @@ plugins {
 
 group = 'media.barney'
 version = '0.1.0-SNAPSHOT'
-def lombokVersion = '1.18.44'
+def lombokVersion = '1.18.46'
 def jacocoVersion = '0.8.14'
 def jspecifyVersion = '1.0.0'
 def errorproneVersion = '2.49.0'
