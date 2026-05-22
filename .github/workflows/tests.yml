@@ -64,7 +64,7 @@ jobs:
           path: build
 
       - name: Run unit tests
-        run: ./gradlew --build-cache test jacocoTestReport
+        run: ./gradlew --build-cache renderAgents test jacocoTestReport
 
       - name: Upload verified build outputs
         uses: actions/upload-artifact@v7
