@@ -101,7 +101,7 @@ jobs:
           path: build
 
       - name: Package application
-        run: ./gradlew --build-cache --offline bootJar
+        run: ./gradlew --build-cache bootJar
 
   quality-crap-ai-agents:
     name: verify / quality-crap-ai-agents
@@ -131,7 +131,7 @@ jobs:
           path: build
 
       - name: Run crap-java gate
-        run: ./gradlew --build-cache --offline crap-java-check
+        run: ./gradlew --build-cache crap-java-check
 
   quality-cognitive-ai-agents:
     name: verify / quality-cognitive-ai-agents
@@ -161,4 +161,4 @@ jobs:
           path: build
 
       - name: Run cognitive-java gate
-        run: ./gradlew --build-cache --offline cognitive-java-check
+        run: ./gradlew --build-cache cognitive-java-check
