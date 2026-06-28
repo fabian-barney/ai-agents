@@ -1,19 +1,19 @@
 plugins {
     id 'java'
     id 'jacoco'
-    id 'media.barney.crap-java' version '0.6.0'
+    id 'media.barney.crap-java' version '0.6.1'
     id 'media.barney.cognitive-java' version '0.6.0'
     id 'net.ltgt.errorprone' version '5.1.0'
-    id 'org.springframework.boot' version '4.0.6'
+    id 'org.springframework.boot' version '4.0.7'
 }
 
 group = 'media.barney'
 version = '0.1.0-SNAPSHOT'
 def lombokVersion = '1.18.46'
-def jacocoVersion = '0.8.14'
+def jacocoVersion = '0.8.15'
 def jspecifyVersion = '1.0.0'
-def errorproneVersion = '2.49.0'
-def nullawayVersion = '0.13.4'
+def errorproneVersion = '2.50.0'
+def nullawayVersion = '0.13.7'
 
 repositories {
     mavenCentral()
@@ -33,9 +33,9 @@ jacoco {
 }
 
 dependencies {
-    implementation platform('org.springframework.boot:spring-boot-dependencies:4.0.6')
-    annotationProcessor platform('org.springframework.boot:spring-boot-dependencies:4.0.6')
-    testImplementation platform('org.springframework.boot:spring-boot-dependencies:4.0.6')
+    implementation platform('org.springframework.boot:spring-boot-dependencies:4.0.7')
+    annotationProcessor platform('org.springframework.boot:spring-boot-dependencies:4.0.7')
+    testImplementation platform('org.springframework.boot:spring-boot-dependencies:4.0.7')
 
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
