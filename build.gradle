@@ -1,22 +1,28 @@
 plugins {
     id 'java'
     id 'jacoco'
-    id 'media.barney.crap-java' version '0.6.1'
+    id 'media.barney.crap-java' version '0.6.3'
     id 'media.barney.cognitive-java' version '0.6.0'
     id 'net.ltgt.errorprone' version '5.1.0'
-    id 'org.springframework.boot' version '4.0.7'
+    id 'org.springframework.boot' version '4.0.8'
 }
 
 group = 'media.barney'
 version = '0.1.0-SNAPSHOT'
 def lombokVersion = '1.18.46'
 def jacocoVersion = '0.8.15'
-def jspecifyVersion = '1.0.0'
+def jspecifyVersion = '1.0.1'
 def errorproneVersion = '2.50.0'
-def nullawayVersion = '0.13.7'
+def nullawayVersion = '0.13.8'
 
 repositories {
     mavenCentral()
+}
+
+crapJava {
+    // crap-java 0.6.3 changes its default from 8.0 to 6.0; preserve this
+    // repository's existing quality-gate behavior during the dependency update.
+    threshold = 8.0d
 }
 
 base {
@@ -33,9 +39,9 @@ jacoco {
 }
 
 dependencies {
-    implementation platform('org.springframework.boot:spring-boot-dependencies:4.0.7')
-    annotationProcessor platform('org.springframework.boot:spring-boot-dependencies:4.0.7')
-    testImplementation platform('org.springframework.boot:spring-boot-dependencies:4.0.7')
+    implementation platform('org.springframework.boot:spring-boot-dependencies:4.0.8')
+    annotationProcessor platform('org.springframework.boot:spring-boot-dependencies:4.0.8')
+    testImplementation platform('org.springframework.boot:spring-boot-dependencies:4.0.8')
 
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
