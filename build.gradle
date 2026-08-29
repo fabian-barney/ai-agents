@@ -19,6 +19,12 @@ repositories {
     mavenCentral()
 }
 
+crapJava {
+    // crap-java 0.6.3 changes its default from 8.0 to 6.0; preserve this
+    // repository's existing quality-gate behavior during the dependency update.
+    threshold = 8.0
+}
+
 base {
     archivesName = 'ai-agents'
 }
