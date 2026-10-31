@@ -3,14 +3,14 @@ plugins {
     id 'jacoco'
     id 'media.barney.crap-java' version '0.6.4'
     id 'media.barney.cognitive-java' version '0.6.0'
-    id 'net.ltgt.errorprone' version '5.1.1'
+    id 'net.ltgt.errorprone' version '5.2.0'
     id 'org.springframework.boot' version '4.0.9'
 }
 
 group = 'media.barney'
 version = '0.1.0-SNAPSHOT'
 def lombokVersion = '1.18.48'
-def jacocoVersion = '0.8.15'
+def jacocoVersion = '0.8.16'
 def jspecifyVersion = '1.0.1'
 def errorproneVersion = '2.51.0'
 def nullawayVersion = '0.14.3'
